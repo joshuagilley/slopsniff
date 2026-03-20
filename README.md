@@ -311,6 +311,9 @@ git clone https://github.com/joshuagilley/slopsniff
 cd slopsniff
 uv sync --dev
 
+# Git hooks (ruff, slopsniff self-check, pytest)
+pre-commit install
+
 # Run tests
 uv run pytest
 
@@ -320,6 +323,8 @@ uv run ruff check .
 # Run CLI locally
 uv run slopsniff .
 ```
+
+Pre-commit runs **`uv run slopsniff . --fail-threshold 30`** (same bar as CI’s self-check job), so the CLI comes from this repo’s editable install—no separate PyPI pin. Run `uv sync --dev` before commits so the hook’s `uv run` sees the project.
 
 ---
 
