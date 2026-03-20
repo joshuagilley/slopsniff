@@ -261,6 +261,8 @@ Rules are plain classes — no magic, no registration, easy to test in isolation
 slopsniff/
 ├── pyproject.toml
 ├── README.md
+├── scripts/
+│   └── release.py        # Optional: bump, lock, push, tag, gh release
 ├── src/
 │   └── slopsniff/
 │       ├── __init__.py
@@ -369,10 +371,37 @@ CI is defined in [`.github/workflows/publish.yml`](.github/workflows/publish.yml
 7. **Push the tag** — `git push origin v0.1.6`.
 8. **Create and publish a GitHub Release** for that tag — This triggers the workflow.
 
-**CLI (steps 6–8):**
+### Scripted release
+
+From repo root, on **`main`**, with a **clean** working tree (`git status` empty):
 
 ```bash
-# After main is pushed with the new pyproject.toml version:
+./scripts/release.py 0.1.7
+# or: uv run python scripts/release.py v0.1.7
+```
+
+This runs: `git pull origin main` → bump `pyproject.toml` and `src/slopsniff/__init__.py` → `uv lock` → commit `chore: release …` → push `main` → tag `v…` → push tag → `gh release create` with `--generate-notes` (triggers PyPI publish).
+
+| Flag | Meaning |
+| ---- | ------- |
+| `--dry-run` | Print steps only; no file or git changes. |
+| `--no-pull` | Skip `git pull origin main`. |
+| `--allow-dirty` | Allow a dirty tree before bump (use carefully). |
+| `--notes-file PATH` | Use this file for release notes instead of `--generate-notes`. |
+| `--expect-repo OWNER/REPO` | Abort unless `gh repo view` matches (see **Who can run this?**). |
+
+**Who can run this?** Anyone can clone the repo and run the script locally; that does **not** publish anything to *your* PyPI project. Pushing to **your** `main`, tagging, and creating a **GitHub Release** requires **your** GitHub permissions. PyPI only accepts uploads from the [trusted publisher](https://docs.pypi.org/trusted-publishers/) you configured for this repo’s workflow—forks and random contributors do not get OIDC tokens for your package.
+
+**Optional mistake-guard:** Set `SLOPSNIFF_RELEASE_EXPECT_REPO=joshuagilley/slopsniff` in your shell profile (or pass `--expect-repo joshuagilley/slopsniff`) so the script exits if `gh` is pointed at a fork or wrong clone. On GitHub, use **branch protection** on `main` and (recommended) an **environment** with required reviewers for the `release` job so publishes are not silent.
+
+Needs **`git`**, **`uv`**, and **`gh`** logged in. If a release for that tag already exists, `gh release create` will fail with 422—use **Actions → Re-run** for that release instead.
+
+**CLI (steps 6–8) by hand:**
+
+```bash
+# After steps 1–5: main on GitHub includes the version bump (pyproject.toml, uv lock, etc.).
+# New PyPI files need a NEW tag/version—do not re-run an old release to “fix” a failed upload.
+# If gh release create says tag_name already exists, use Actions → Re-run on that release instead.
 git tag v0.1.6
 git push origin v0.1.6
 gh release create v0.1.6 --title "0.1.6" --notes "What changed in this release."
