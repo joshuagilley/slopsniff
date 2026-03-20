@@ -11,6 +11,10 @@
   <a href="https://pypi.org/project/slopsniff/"><img src="https://img.shields.io/pypi/dm/slopsniff.svg" alt="Monthly downloads" /></a>
 </p>
 
+<p align="center">
+  <strong><a href="https://pypi.org/project/slopsniff/">pypi.org/project/slopsniff</a></strong>
+</p>
+
 A lightweight CLI for catching "slop" in modern codebases before it hardens into team-wide tech debt.
 
 SlopSniff is not trying to detect whether code was written by AI. It is trying to detect the kinds of patterns that show up when teams move too fast, overgenerate code, or skip the cleanup pass — giant files, copy-pasted functions, versioned helper sprawl, and everything else that quietly becomes the norm.
