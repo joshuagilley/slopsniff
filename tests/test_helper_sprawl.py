@@ -5,9 +5,7 @@ from slopsniff.rules.helper_sprawl import HelperSprawlRule
 
 
 def _ctx(path: Path, functions: list[FunctionInfo] | None = None) -> FileContext:
-    return FileContext(
-        path=path, lines=[], language="python", functions=functions or []
-    )
+    return FileContext(path=path, lines=[], language="python", functions=functions or [])
 
 
 def _fn(name: str, path: str, line: int = 1) -> FunctionInfo:

@@ -17,9 +17,7 @@ app = typer.Typer(
 
 @app.command()
 def scan(
-    path: Annotated[
-        str, typer.Argument(help="Path to the directory to scan")
-    ] = ".",
+    path: Annotated[str, typer.Argument(help="Path to the directory to scan")] = ".",
     fail_threshold: Annotated[
         int, typer.Option("--fail-threshold", "-t", help="Score at which CI fails")
     ] = 20,
@@ -36,9 +34,7 @@ def scan(
     ] = None,
     max_function_lines: Annotated[
         int | None,
-        typer.Option(
-            "--max-function-lines", help="Override function line warning threshold"
-        ),
+        typer.Option("--max-function-lines", help="Override function line warning threshold"),
     ] = None,
 ) -> None:
     """Scan a codebase for slop patterns.

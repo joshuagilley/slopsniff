@@ -24,9 +24,7 @@ class DuplicateFunctionsRule:
             if len(fns) < 2:
                 continue
 
-            locations = ", ".join(
-                f"{fn.file_path}:{fn.line_start}-{fn.line_end}" for fn in fns
-            )
+            locations = ", ".join(f"{fn.file_path}:{fn.line_start}-{fn.line_end}" for fn in fns)
             primary = fns[0]
             findings.append(
                 Finding(
@@ -35,10 +33,7 @@ class DuplicateFunctionsRule:
                     file_path=primary.file_path,
                     line_start=primary.line_start,
                     line_end=primary.line_end,
-                    message=(
-                        f"Duplicate function body found in {len(fns)} locations: "
-                        f"{locations}"
-                    ),
+                    message=(f"Duplicate function body found in {len(fns)} locations: {locations}"),
                     score=10,
                 )
             )

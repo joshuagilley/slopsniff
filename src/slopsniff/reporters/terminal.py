@@ -2,14 +2,14 @@ from ..models import Finding, ScanResult
 from ..scoring import grade
 
 _SEVERITY_COLOR = {
-    "high": "\033[91m",    # bright red
+    "high": "\033[91m",  # bright red
     "medium": "\033[93m",  # bright yellow
-    "low": "\033[94m",     # bright blue
+    "low": "\033[94m",  # bright blue
 }
 _STATUS_COLOR = {
     "healthy": "\033[92m",  # green
     "warning": "\033[93m",  # yellow
-    "fail": "\033[91m",     # red
+    "fail": "\033[91m",  # red
 }
 _RESET = "\033[0m"
 _BOLD = "\033[1m"
