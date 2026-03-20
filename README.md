@@ -342,7 +342,9 @@ Publishing is automated in [`.github/workflows/publish.yml`](.github/workflows/p
 
 Configure [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/) for this repo (and the `release` environment in GitHub if you use approval rules).
 
-**If publish fails with `HTTPError: 400 Bad Request`:** PyPI rejects uploading a **filename that already exists** (wheel and sdist names include the version). That usually means **that version is already on PyPI** from an earlier upload, while you re-ran the workflow or rebuilt for the same `pyproject.toml` version. **Fix:** bump `[project].version`, push to `main`, tag a **new** release, and publish that release—not “Re-run failed jobs” on the old one. Deleting a GitHub Release does not remove files from PyPI.
+**If publish fails with `HTTPError: 400 Bad Request`:** PyPI rejects uploading a **filename that already exists** (wheel and sdist names include the version). That almost always means **that version is already on PyPI**.
+
+**Re-running a release never picks up `main`.** “Re-run all jobs” on the **v0.1.4** release checks out the **v0.1.4** tag again, so `uv build` still produces `slopsniff-0.1.4-*` and upload fails forever. **Fix:** merge your bumped `pyproject.toml` on `main` (e.g. `0.1.5`), create tag **`v0.1.5`** on that commit, push it, then **create a new GitHub Release** for `v0.1.5` and publish it. Do not re-run the old release workflow. Deleting a GitHub Release does not remove files from PyPI.
 
 ---
 
