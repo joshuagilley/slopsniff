@@ -5,7 +5,8 @@ import typer
 
 from . import scanner as _scanner
 from .config import Config
-from .reporters import json_reporter, terminal as terminal_reporter
+from .reporters import json_reporter
+from .reporters import terminal as terminal_reporter
 
 app = typer.Typer(
     name="slopsniff",

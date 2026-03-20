@@ -4,7 +4,6 @@ from pathlib import Path
 
 from ..models import FunctionInfo
 
-
 _FUNCTION_PATTERNS = [
     re.compile(r"^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\("),
     re.compile(r"^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?\("),

@@ -11,7 +11,9 @@ def _ctx(path: Path, functions: list[FunctionInfo] | None = None) -> FileContext
 
 
 def _fn(name: str, path: str, line: int = 1) -> FunctionInfo:
-    return FunctionInfo(name=name, file_path=path, line_start=line, line_end=line + 5, body_hash="h")
+    return FunctionInfo(
+        name=name, file_path=path, line_start=line, line_end=line + 5, body_hash="h"
+    )
 
 
 def test_flags_utils_filename(tmp_path: Path) -> None:

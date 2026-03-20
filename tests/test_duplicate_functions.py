@@ -9,7 +9,9 @@ def _ctx(path: Path, functions: list[FunctionInfo]) -> FileContext:
 
 
 def _fn(name: str, path: str, start: int, end: int, body_hash: str) -> FunctionInfo:
-    return FunctionInfo(name=name, file_path=path, line_start=start, line_end=end, body_hash=body_hash)
+    return FunctionInfo(
+        name=name, file_path=path, line_start=start, line_end=end, body_hash=body_hash
+    )
 
 
 def test_no_finding_for_unique_functions(tmp_path: Path) -> None:

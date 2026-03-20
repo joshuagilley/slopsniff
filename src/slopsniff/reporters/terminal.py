@@ -42,7 +42,7 @@ def report(result: ScanResult, verbose: bool = False) -> None:
     print()
 
     if not result.findings:
-        print(f"\033[92mNo issues found.\033[0m\n")
+        print("\033[92mNo issues found.\033[0m\n")
         return
 
     sorted_findings = sorted(

@@ -1,6 +1,5 @@
 from .models import Finding
 
-
 SEVERITY_SCORES: dict[str, int] = {"low": 2, "medium": 5, "high": 10}
 
 
