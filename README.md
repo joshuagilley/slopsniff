@@ -33,6 +33,8 @@ Or with `uv`:
 uv add slopsniff
 ```
 
+The default CLI output uses [Rich](https://github.com/textualize/rich) for panels, colors, and wrapping in the terminal. Use `--format json` for plain machine-readable output, or set `NO_COLOR` if you need unstyled text.
+
 ---
 
 ## Usage
@@ -118,10 +120,10 @@ The fail threshold is configurable via `--fail-threshold`.
 
 ### `large-file`
 
-Flags files that exceed configurable line count thresholds.
+Flags files that exceed configurable line count thresholds **only for code-like extensions** (`.py`, `.js`, `.ts`, `.tsx`, `.jsx`, `.vue`). Long markdown, HTML, MDX, plain text, etc. are still scanned by other rules (e.g. `exposed-secrets`) but do not trigger `large-file`, since huge docs are normal.
 
-- **medium** at 400+ lines
-- **high** at 800+ lines
+- **medium** at 400+ lines (code files only)
+- **high** at 800+ lines (code files only)
 
 ### `large-function`
 
@@ -151,6 +153,28 @@ Flags two categories of low-cohesion patterns:
 Line-based heuristics for strings that **look like real credentials** (PEM private key headers, AWS key IDs, GitHub PATs, Slack/Stripe/OpenAI/Anthropic/Google/SendGrid-style tokens). Intended to catch accidents like pasting env vars into a blog post, component, or markdown file—not to prove a string is a live secret.
 
 - **high** for any line matching one of the built-in patterns (rotate the credential even if it was “just for a screenshot”)
+
+### Inline suppressions (`slopsniff: ignore`)
+
+After you review a line and accept the risk (e.g. a **test fixture** that intentionally looks like a secret), add a pragma **on that same line**. SlopSniff matches the text anywhere on the line, so this works in Python (`#`), JS/TS (`//`), HTML, markdown, etc.
+
+| Pragma                                          | Effect                                                                      |
+| ----------------------------------------------- | --------------------------------------------------------------------------- |
+| `slopsniff: ignore`                             | Skips **all** rules that honor this pragma (today: `exposed-secrets` only). |
+| `slopsniff: ignore exposed-secrets`             | Skips only the `exposed-secrets` rule on that line.                         |
+| `slopsniff: ignore exposed-secrets, large-file` | Skips the listed rule ids (comma-separated).                                |
+
+**Re-checking after edits:** There is no stored fingerprint. If you change the line—remove the pragma, change the token, or rewrite the line—the next scan applies the usual rules again. Prefer the **rule-specific** form so other checks can still run if more rules adopt the same pragma later.
+
+Examples:
+
+```python
+FAKE_KEY = "AKIA" + "0" * 16  # slopsniff: ignore exposed-secrets
+```
+
+```typescript
+const demo = "ghp_" + "a".repeat(36); // slopsniff: ignore exposed-secrets
+```
 
 ---
 
@@ -246,11 +270,12 @@ slopsniff/
 │       ├── scanner.py      # Scan pipeline orchestration
 │       ├── scoring.py      # compute_score(), grade()
 │       ├── walker.py       # Repo traversal with filtering
+│       ├── pragma.py       # slopsniff: ignore parsing
 │       ├── parsers/
 │       │   ├── python_ast.py   # ast-based Python parser
 │       │   └── text_parser.py  # Regex/brace parser for JS/TS/Vue
 │       ├── reporters/
-│       │   ├── terminal.py     # Colored terminal output
+│       │   ├── terminal.py     # Rich terminal UI
 │       │   └── json_reporter.py
 │       └── rules/
 │           ├── base.py                  # PerFileRule / CrossFileRule protocols
@@ -265,7 +290,8 @@ slopsniff/
     ├── test_large_function.py
     ├── test_duplicate_functions.py
     ├── test_exposed_secrets.py
-    └── test_helper_sprawl.py
+    ├── test_helper_sprawl.py
+    └── test_pragma.py
 ```
 
 ---
@@ -383,6 +409,7 @@ A **GitHub Release** already exists for that tag. You cannot create a second one
 | Max function lines (high)    | 100                                                                           |
 | Fail threshold               | 20                                                                            |
 | Included extensions          | `.py` `.js` `.ts` `.tsx` `.jsx` `.vue` `.md` `.mdx` `.html`                   |
+| `large-file` extensions      | `.py` `.js` `.ts` `.tsx` `.jsx` `.vue` only                                   |
 | Excluded directories         | `.git` `node_modules` `.nuxt` `dist` `build` `.venv` `coverage` `__pycache__` |
 
 ---
@@ -395,5 +422,5 @@ A **GitHub Release** already exists for that tag. You cannot create a second one
 - [ ] Tree-sitter integration for accurate multi-language AST
 - [ ] GitHub PR annotation support
 - [ ] Score baselining for legacy repos
-- [ ] Suppression comments (`# slopsniff: ignore`)
+- [x] Inline suppressions (`slopsniff: ignore` — see **Inline suppressions** under Rules)
 - [ ] Homebrew tap

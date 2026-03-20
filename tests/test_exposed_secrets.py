@@ -30,7 +30,8 @@ def test_detects_github_classic_pat(tmp_path: Path) -> None:
 
 def test_detects_pem_header(tmp_path: Path) -> None:
     rule = ExposedSecretsRule()
-    findings = rule.run(_ctx(tmp_path / "x.py", ["-----BEGIN RSA PRIVATE KEY-----"]))
+    pem = "-----BEGIN RSA PRIVATE KEY-----"  # slopsniff: ignore exposed-secrets
+    findings = rule.run(_ctx(tmp_path / "x.py", [pem]))
     assert len(findings) == 1
     assert "PEM private key" in findings[0].message
 
@@ -57,3 +58,27 @@ def test_multiple_patterns_one_line_single_finding(tmp_path: Path) -> None:
     assert len(findings) == 1
     assert "AWS access key id" in findings[0].message
     assert "GitHub personal access token" in findings[0].message
+
+
+def test_pragma_global_suppresses_line(tmp_path: Path) -> None:
+    key = "AKIA" + "0" * 16
+    rule = ExposedSecretsRule()
+    line = f"KEY={key}  # slopsniff: ignore"
+    assert rule.run(_ctx(tmp_path / "t.py", [line])) == []
+
+
+def test_pragma_rule_specific_suppresses(tmp_path: Path) -> None:
+    key = "AKIA" + "0" * 16
+    rule = ExposedSecretsRule()
+    line = f"KEY={key}  # slopsniff: ignore exposed-secrets"
+    assert rule.run(_ctx(tmp_path / "t.py", [line])) == []
+
+
+def test_edit_line_pragma_removed_finds_again(tmp_path: Path) -> None:
+    """Changing the line (dropping pragma) surfaces the finding again."""
+    key = "AKIA" + "0" * 16
+    rule = ExposedSecretsRule()
+    ignored = f"KEY={key}  # slopsniff: ignore"
+    bare = f"KEY={key}"
+    assert rule.run(_ctx(tmp_path / "a.py", [ignored])) == []
+    assert len(rule.run(_ctx(tmp_path / "b.py", [bare]))) == 1

@@ -10,6 +10,10 @@ class LargeFileRule:
         self.config = config
 
     def run(self, file_context: FileContext) -> list[Finding]:
+        suffix = file_context.path.suffix.lower()
+        if suffix not in self.config.large_file_extensions:
+            return []
+
         count = len(file_context.lines)
 
         if count >= self.config.max_file_lines_high:

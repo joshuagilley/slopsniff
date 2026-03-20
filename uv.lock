@@ -318,6 +318,7 @@ name = "slopsniff"
 version = "0.1.6"
 source = { editable = "." }
 dependencies = [
+    { name = "rich" },
     { name = "typer" },
 ]
 
@@ -329,7 +330,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typer", specifier = ">=0.24.1" }]
+requires-dist = [
+    { name = "rich", specifier = ">=13.9.0" },
+    { name = "typer", specifier = ">=0.24.1" },
+]
 
 [package.metadata.requires-dev]
 dev = [

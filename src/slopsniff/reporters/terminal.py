@@ -1,24 +1,24 @@
+from rich.console import Console
+from rich.markup import escape
+from rich.panel import Panel
+from rich.rule import Rule
+from rich.table import Table
+from rich.text import Text
+
 from ..models import Finding, ScanResult
 from ..scoring import grade
 
-_SEVERITY_COLOR = {
-    "high": "\033[91m",  # bright red
-    "medium": "\033[93m",  # bright yellow
-    "low": "\033[94m",  # bright blue
+_SEVERITY_STYLE = {
+    "high": "bold red",
+    "medium": "bold yellow",
+    "low": "bold blue",
 }
-_STATUS_COLOR = {
-    "healthy": "\033[92m",  # green
-    "warning": "\033[93m",  # yellow
-    "fail": "\033[91m",  # red
+_STATUS_STYLE = {
+    "healthy": "bold green",
+    "warning": "bold yellow",
+    "fail": "bold red",
 }
-_RESET = "\033[0m"
-_BOLD = "\033[1m"
 _SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
-
-
-def _severity_tag(severity: str) -> str:
-    color = _SEVERITY_COLOR.get(severity, "")
-    return f"{color}[{severity.upper()}]{_RESET}"
 
 
 def _format_location(finding: Finding) -> str:
@@ -30,19 +30,41 @@ def _format_location(finding: Finding) -> str:
     return loc
 
 
-def report(result: ScanResult, verbose: bool = False) -> None:
-    status = grade(result.total_score)
-    status_color = _STATUS_COLOR.get(status, "")
+def _summary_panel(result: ScanResult, status: str) -> Panel:
+    grid = Table.grid(padding=(0, 2))
+    grid.add_column(style="dim", justify="right")
+    grid.add_column()
 
-    print(f"\n{_BOLD}SlopSniff Report{_RESET}")
-    print("=" * 40)
-    print(f"Files scanned:  {result.files_scanned}")
-    print(f"Total score:    {result.total_score}")
-    print(f"Status:         {status_color}{status.upper()}{_RESET}")
-    print()
+    grid.add_row("Files scanned", str(result.files_scanned))
+    grid.add_row("Total score", str(result.total_score))
+    status_style = _STATUS_STYLE.get(status, "white")
+    grid.add_row("Status", Text(status.upper(), style=status_style))
+
+    return Panel(
+        grid,
+        title="[bold white]SlopSniff[/bold white]",
+        title_align="left",
+        border_style="bright_magenta",
+        padding=(1, 2),
+    )
+
+
+def report(result: ScanResult, verbose: bool = False) -> None:
+    console = Console()
+    status = grade(result.total_score)
+
+    console.print()
+    console.print(_summary_panel(result, status))
+    console.print()
 
     if not result.findings:
-        print("\033[92mNo issues found.\033[0m\n")
+        console.print(
+            Panel(
+                Text("No issues found.", style="bold green"),
+                border_style="green",
+            )
+        )
+        console.print()
         return
 
     sorted_findings = sorted(
@@ -50,10 +72,16 @@ def report(result: ScanResult, verbose: bool = False) -> None:
         key=lambda f: (_SEVERITY_ORDER.get(f.severity, 3), f.file_path),
     )
 
+    console.print(Rule("[dim]Findings[/dim]", style="bright_magenta"))
+    console.print()
+
     for finding in sorted_findings:
-        print(f"{_severity_tag(finding.severity)} {finding.rule_id}")
-        print(f"  {_format_location(finding)}")
-        print(f"  {finding.message}")
+        sev = finding.severity.lower()
+        style = _SEVERITY_STYLE.get(sev, "white")
+        label = f"[{finding.severity.upper()}] "
+        console.print(Text.assemble((label, style), (finding.rule_id, "cyan")))
+        console.print(Text(f"  {_format_location(finding)}", style="dim"))
+        console.print(Text(f"  {escape(finding.message)}"))
         if verbose:
-            print(f"  score: +{finding.score}")
-        print()
+            console.print(Text(f"  score: +{finding.score}", style="dim italic"))
+        console.print()

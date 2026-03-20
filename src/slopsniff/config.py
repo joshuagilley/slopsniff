@@ -1,6 +1,11 @@
 from dataclasses import dataclass, field
 
 
+def _default_large_file_extensions() -> frozenset[str]:
+    """Extensions where line-count heuristics match source code (not prose/docs)."""
+    return frozenset({".py", ".js", ".ts", ".tsx", ".jsx", ".vue"})
+
+
 @dataclass
 class Config:
     max_file_lines_warning: int = 400
@@ -21,6 +26,7 @@ class Config:
             ".html",
         ]
     )
+    large_file_extensions: frozenset[str] = field(default_factory=_default_large_file_extensions)
     exclude_dirs: list[str] = field(
         default_factory=lambda: [
             ".git",

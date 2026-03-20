@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from ..models import FileContext, Finding
+from ..pragma import line_ignores_rule
 
 # High-confidence shapes only; favor missing a secret over drowning blogs/CI in noise.
 _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
@@ -71,6 +72,8 @@ class ExposedSecretsRule:
                 if pattern.search(line):
                     kinds.append(label)
             if not kinds:
+                continue
+            if line_ignores_rule(line, self.rule_id):
                 continue
             seen_lines.add(i)
             kinds_str = "; ".join(kinds) if len(kinds) > 1 else kinds[0]

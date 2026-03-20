@@ -44,3 +44,13 @@ def test_custom_thresholds(tmp_path: Path) -> None:
     assert rule.run(_ctx(tmp_path / "a.py", 99)) == []
     assert rule.run(_ctx(tmp_path / "b.py", 100))[0].severity == "medium"
     assert rule.run(_ctx(tmp_path / "c.py", 200))[0].severity == "high"
+
+
+def test_skips_markdown_even_when_huge(tmp_path: Path) -> None:
+    rule = LargeFileRule(Config())
+    assert rule.run(_ctx(tmp_path / "readme.md", 10_000)) == []
+
+
+def test_skips_html_even_when_huge(tmp_path: Path) -> None:
+    rule = LargeFileRule(Config())
+    assert rule.run(_ctx(tmp_path / "page.html", 10_000)) == []

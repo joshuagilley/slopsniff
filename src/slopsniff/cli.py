@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 import typer
 
@@ -15,6 +15,39 @@ app = typer.Typer(
 )
 
 
+def _resolve_scan_root(path: str) -> Path:
+    root = Path(path).resolve()
+    if not root.exists():
+        typer.echo(f"Error: path '{path}' does not exist.", err=True)
+        raise typer.Exit(1)
+    return root if root.is_dir() else root.parent
+
+
+def _build_config(
+    fail_threshold: int,
+    verbose: bool,
+    max_file_lines: int | None,
+    max_function_lines: int | None,
+) -> Config:
+    config = Config(fail_threshold=fail_threshold, verbose=verbose)
+    if max_file_lines is not None:
+        config.max_file_lines_warning = max_file_lines
+    if max_function_lines is not None:
+        config.max_function_lines_warning = max_function_lines
+    return config
+
+
+def _render_result(
+    result: _scanner.ScanResult,
+    output_format: Literal["terminal", "json"],
+    verbose: bool,
+) -> None:
+    if output_format == "json":
+        typer.echo(json_reporter.report(result))
+        return
+    terminal_reporter.report(result, verbose=verbose)
+
+
 @app.command()
 def scan(
     path: Annotated[str, typer.Argument(help="Path to the directory to scan")] = ".",
@@ -22,7 +55,7 @@ def scan(
         int, typer.Option("--fail-threshold", "-t", help="Score at which CI fails")
     ] = 20,
     format: Annotated[
-        str,
+        Literal["terminal", "json"],
         typer.Option("--format", "-f", help="Output format: terminal or json"),
     ] = "terminal",
     verbose: Annotated[
@@ -47,24 +80,10 @@ def scan(
 
       slopsniff . --format json
     """
-    root = Path(path).resolve()
-    if not root.exists():
-        typer.echo(f"Error: path '{path}' does not exist.", err=True)
-        raise typer.Exit(1)
-
-    config = Config(fail_threshold=fail_threshold, verbose=verbose)
-    if max_file_lines is not None:
-        config.max_file_lines_warning = max_file_lines
-    if max_function_lines is not None:
-        config.max_function_lines_warning = max_function_lines
-
-    target = root if root.is_dir() else root.parent
+    target = _resolve_scan_root(path)
+    config = _build_config(fail_threshold, verbose, max_file_lines, max_function_lines)
     result = _scanner.scan(target, config)
-
-    if format == "json":
-        typer.echo(json_reporter.report(result))
-    else:
-        terminal_reporter.report(result, verbose=verbose)
+    _render_result(result, format, verbose)
 
     if not result.passed:
         raise typer.Exit(1)
