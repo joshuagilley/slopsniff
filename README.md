@@ -342,6 +342,8 @@ Publishing is automated in [`.github/workflows/publish.yml`](.github/workflows/p
 
 Configure [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/) for this repo (and the `release` environment in GitHub if you use approval rules).
 
+**If publish fails with `HTTPError: 400 Bad Request`:** PyPI rejects uploading a **filename that already exists** (wheel and sdist names include the version). That usually means **that version is already on PyPI** from an earlier upload, while you re-ran the workflow or rebuilt for the same `pyproject.toml` version. **Fix:** bump `[project].version`, push to `main`, tag a **new** release, and publish that release—not “Re-run failed jobs” on the old one. Deleting a GitHub Release does not remove files from PyPI.
+
 ---
 
 ## Defaults reference

@@ -48,5 +48,8 @@ jobs:
           name: dist
           path: dist/
 
+      # PyPI returns 400 if these exact filenames already exist (same version re-published).
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true

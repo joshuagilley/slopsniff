@@ -1,6 +1,6 @@
 [project]
 name = "slopsniff"
-version = "0.1.4"
+version = "0.1.5"
 description = "A lightweight CLI for catching slop in modern codebases before it hardens into tech debt."
 readme = "README.md"
 license = { text = "MIT" }
