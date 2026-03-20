@@ -1,0 +1,25 @@
+[project]
+name = "slopsniff"
+version = "0.1.0"
+description = "A lightweight CLI for catching slop in modern codebases before it hardens into tech debt."
+readme = "README.md"
+authors = [
+    { name = "joshuagilley", email = "joshdgilley@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "typer>=0.24.1",
+]
+
+[project.scripts]
+slopsniff = "slopsniff.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.8.11,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "ruff>=0.15.7",
+]
