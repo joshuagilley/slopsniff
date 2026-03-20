@@ -3,13 +3,31 @@ name = "slopsniff"
 version = "0.1.0"
 description = "A lightweight CLI for catching slop in modern codebases before it hardens into tech debt."
 readme = "README.md"
+license = { text = "MIT" }
 authors = [
     { name = "joshuagilley", email = "joshdgilley@gmail.com" }
+]
+keywords = ["cli", "code-quality", "static-analysis", "linter", "ai", "ci"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 requires-python = ">=3.13"
 dependencies = [
     "typer>=0.24.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/joshuagilley/slopsniff"
+Repository = "https://github.com/joshuagilley/slopsniff"
+"Bug Tracker" = "https://github.com/joshuagilley/slopsniff/issues"
 
 [project.scripts]
 slopsniff = "slopsniff.cli:app"
@@ -23,3 +41,13 @@ dev = [
     "pytest>=9.0.2",
     "ruff>=0.15.7",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
