@@ -1,4 +1,4 @@
-# SlopSniff
+# slopsniff
 
 <p align="center">
   <img src="assets/logo.png" alt="SlopSniff" width="320" />
@@ -48,14 +48,14 @@ slopsniff . --max-file-lines 300 --max-function-lines 40
 
 ### All flags
 
-| Flag | Short | Default | Description |
-|---|---|---|---|
-| `path` | | `.` | Directory to scan |
-| `--fail-threshold` | `-t` | `20` | Score at which CI returns exit code 1 |
-| `--format` | `-f` | `terminal` | Output format: `terminal` or `json` |
-| `--verbose` | `-v` | off | Show score per finding |
-| `--max-file-lines` | | `400` | Override file line warning threshold |
-| `--max-function-lines` | | `50` | Override function line warning threshold |
+| Flag                   | Short | Default    | Description                              |
+| ---------------------- | ----- | ---------- | ---------------------------------------- |
+| `path`                 |       | `.`        | Directory to scan                        |
+| `--fail-threshold`     | `-t`  | `20`       | Score at which CI returns exit code 1    |
+| `--format`             | `-f`  | `terminal` | Output format: `terminal` or `json`      |
+| `--verbose`            | `-v`  | off        | Show score per finding                   |
+| `--max-file-lines`     |       | `400`      | Override file line warning threshold     |
+| `--max-function-lines` |       | `50`       | Override function line warning threshold |
 
 ---
 
@@ -88,16 +88,16 @@ Status:         WARNING
 Each finding contributes to a total slop score.
 
 | Severity | Score |
-|---|---|
-| high | 10 |
-| medium | 5 |
-| low | 2 |
+| -------- | ----- |
+| high     | 10    |
+| medium   | 5     |
+| low      | 2     |
 
-| Score range | Status |
-|---|---|
-| 0–9 | healthy |
-| 10–19 | warning |
-| 20+ | fail (non-zero exit) |
+| Score range | Status               |
+| ----------- | -------------------- |
+| 0–9         | healthy              |
+| 10–19       | warning              |
+| 20+         | fail (non-zero exit) |
 
 The fail threshold is configurable via `--fail-threshold`.
 
@@ -106,23 +106,27 @@ The fail threshold is configurable via `--fail-threshold`.
 ## Rules
 
 ### `large-file`
+
 Flags files that exceed configurable line count thresholds.
 
 - **medium** at 400+ lines
 - **high** at 800+ lines
 
 ### `large-function`
+
 Flags functions that exceed configurable line count thresholds. Uses Python's `ast` module for accurate line spans in `.py` files, and brace-depth heuristics for JS/TS/Vue.
 
 - **medium** at 50+ lines
 - **high** at 100+ lines
 
 ### `duplicate-functions`
+
 Normalizes and hashes function bodies, then flags exact duplicates found across or within files. Functions under 5 lines are ignored to reduce noise from trivial patterns like empty `__init__` methods.
 
 - **high** for any exact body match across 2+ locations
 
 ### `helper-sprawl`
+
 Flags two categories of low-cohesion patterns:
 
 1. **Generic filenames** — files named `utils.py`, `helpers.py`, `common.py`, `shared.py`, `misc.py`, etc.
@@ -135,13 +139,13 @@ Flags two categories of low-cohesion patterns:
 
 ## Language support
 
-| Language | Parser | Function detection |
-|---|---|---|
-| Python | `ast` module | Full — accurate line spans, nested functions |
+| Language   | Parser              | Function detection                                    |
+| ---------- | ------------------- | ----------------------------------------------------- |
+| Python     | `ast` module        | Full — accurate line spans, nested functions          |
 | JavaScript | Regex + brace depth | Heuristic — `function`, arrow functions, `const fn =` |
-| TypeScript | Regex + brace depth | Same as JS |
-| TSX | Regex + brace depth | Same as JS |
-| Vue | Regex + brace depth | Same as JS |
+| TypeScript | Regex + brace depth | Same as JS                                            |
+| TSX        | Regex + brace depth | Same as JS                                            |
+| Vue        | Regex + brace depth | Same as JS                                            |
 
 ---
 
@@ -297,15 +301,15 @@ uv run slopsniff .
 
 ## Defaults reference
 
-| Setting | Default |
-|---|---|
-| Max file lines (warning) | 400 |
-| Max file lines (high) | 800 |
-| Max function lines (warning) | 50 |
-| Max function lines (high) | 100 |
-| Fail threshold | 20 |
-| Included extensions | `.py` `.js` `.ts` `.tsx` `.vue` |
-| Excluded directories | `.git` `node_modules` `.nuxt` `dist` `build` `.venv` `coverage` `__pycache__` |
+| Setting                      | Default                                                                       |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| Max file lines (warning)     | 400                                                                           |
+| Max file lines (high)        | 800                                                                           |
+| Max function lines (warning) | 50                                                                            |
+| Max function lines (high)    | 100                                                                           |
+| Fail threshold               | 20                                                                            |
+| Included extensions          | `.py` `.js` `.ts` `.tsx` `.vue`                                               |
+| Excluded directories         | `.git` `node_modules` `.nuxt` `dist` `build` `.venv` `coverage` `__pycache__` |
 
 ---
 
