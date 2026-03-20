@@ -329,22 +329,22 @@ Publishing is automated in [`.github/workflows/publish.yml`](.github/workflows/p
 
 1. **Feature branch** — Branch from `main`, ship changes via PR, merge when CI passes.
 2. **Sync `main`** — `git checkout main && git pull`.
-3. **Version** — Bump `[project].version` in `pyproject.toml` (that value is what PyPI shows). Commit and push to `main` (e.g. `chore: release 0.1.5`).
-4. **Tag + GitHub Release** — Tag `v` + semver to match `pyproject.toml` (e.g. `v0.1.5` for `0.1.5`), push the tag, then create and **Publish** a GitHub Release on that tag (UI: Releases → Draft → pick tag → Publish).
+3. **Version** — Bump `[project].version` in `pyproject.toml` (that value is what PyPI shows). Commit and push to `main` (e.g. `chore: release 0.1.6`).
+4. **Tag + GitHub Release** — Tag `v` + semver to match `pyproject.toml` (e.g. `v0.1.6` for `0.1.6`), push the tag, then create and **Publish** a GitHub Release on that tag (UI: Releases → Draft → pick tag → Publish).
 
    With [GitHub CLI](https://cli.github.com/):
 
    ```bash
-   git tag v0.1.5
-   git push origin v0.1.5
-   gh release create v0.1.5 --title "0.1.5" --notes "Brief summary of changes."
+   git tag v0.1.6
+   git push origin v0.1.6
+   gh release create v0.1.6 --title "0.1.6" --notes "Brief summary of changes."
    ```
 
 Configure [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/) for this repo (and the `release` environment in GitHub if you use approval rules).
 
 **If publish fails with `HTTPError: 400 Bad Request`:** PyPI rejects uploading a **filename that already exists** (wheel and sdist names include the version). That almost always means **that version is already on PyPI**.
 
-**Re-running a release never picks up `main`.** “Re-run all jobs” on the **v0.1.4** release checks out the **v0.1.4** tag again, so `uv build` still produces `slopsniff-0.1.4-*` and upload fails forever. **Fix:** merge your bumped `pyproject.toml` on `main` (e.g. `0.1.5`), create tag **`v0.1.5`** on that commit, push it, then **create a new GitHub Release** for `v0.1.5` and publish it. Do not re-run the old release workflow. Deleting a GitHub Release does not remove files from PyPI.
+**Re-running a release never picks up `main`.** “Re-run all jobs” on an old tag checks out that tag again, so `uv build` keeps producing the same filenames and PyPI may reject duplicates. **Fix:** merge your bumped `pyproject.toml` on `main`, create a **new** tag (e.g. **`v0.1.6`**) on that commit, push it, then **create a new GitHub Release** for that tag and publish it. Do not re-run the old release workflow when you need a new version. Deleting a GitHub Release does not remove files from PyPI.
 
 ---
 
