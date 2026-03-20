@@ -1,6 +1,6 @@
 [project]
 name = "slopsniff"
-version = "0.1.3"
+version = "0.1.4"
 description = "A lightweight CLI for catching slop in modern codebases before it hardens into tech debt."
 readme = "README.md"
 license = { text = "MIT" }
@@ -15,13 +15,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "typer>=0.24.1",
 ]
@@ -47,7 +48,7 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
