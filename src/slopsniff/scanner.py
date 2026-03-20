@@ -5,6 +5,7 @@ from .models import FileContext, Finding, ScanResult
 from .parsers.python_ast import parse_python
 from .parsers.text_parser import parse_text
 from .rules.duplicate_functions import DuplicateFunctionsRule
+from .rules.exposed_secrets import ExposedSecretsRule
 from .rules.helper_sprawl import HelperSprawlRule
 from .rules.large_file import LargeFileRule
 from .rules.large_function import LargeFunctionRule
@@ -36,6 +37,7 @@ def scan(root: Path, config: Config) -> ScanResult:
     large_fn_rule = LargeFunctionRule(config)
     duplicate_rule = DuplicateFunctionsRule()
     sprawl_rule = HelperSprawlRule()
+    secrets_rule = ExposedSecretsRule()
 
     all_findings: list[Finding] = []
     contexts: list[FileContext] = []
@@ -48,6 +50,7 @@ def scan(root: Path, config: Config) -> ScanResult:
         all_findings.extend(large_file_rule.run(ctx))
         all_findings.extend(large_fn_rule.run(ctx))
         all_findings.extend(sprawl_rule.run(ctx))
+        all_findings.extend(secrets_rule.run(ctx))
 
     all_findings.extend(duplicate_rule.run_cross_file(contexts))
     all_findings.extend(sprawl_rule.run_cross_file(contexts))

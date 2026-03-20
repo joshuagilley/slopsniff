@@ -9,7 +9,17 @@ class Config:
     max_function_lines_high: int = 100
     fail_threshold: int = 20
     include_extensions: list[str] = field(
-        default_factory=lambda: [".py", ".js", ".ts", ".tsx", ".vue"]
+        default_factory=lambda: [
+            ".py",
+            ".js",
+            ".ts",
+            ".tsx",
+            ".jsx",
+            ".vue",
+            ".md",
+            ".mdx",
+            ".html",
+        ]
     )
     exclude_dirs: list[str] = field(
         default_factory=lambda: [

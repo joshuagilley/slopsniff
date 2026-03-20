@@ -146,6 +146,12 @@ Flags two categories of low-cohesion patterns:
 - **low** for generic filenames
 - **medium** for versioned function name clusters
 
+### `exposed-secrets`
+
+Line-based heuristics for strings that **look like real credentials** (PEM private key headers, AWS key IDs, GitHub PATs, Slack/Stripe/OpenAI/Anthropic/Google/SendGrid-style tokens). Intended to catch accidents like pasting env vars into a blog post, component, or markdown file—not to prove a string is a live secret.
+
+- **high** for any line matching one of the built-in patterns (rotate the credential even if it was “just for a screenshot”)
+
 ---
 
 ## Language support
@@ -156,7 +162,11 @@ Flags two categories of low-cohesion patterns:
 | JavaScript | Regex + brace depth | Heuristic — `function`, arrow functions, `const fn =` |
 | TypeScript | Regex + brace depth | Same as JS                                            |
 | TSX        | Regex + brace depth | Same as JS                                            |
+| JSX        | Regex + brace depth | Same as JS                                            |
 | Vue        | Regex + brace depth | Same as JS                                            |
+| Markdown   | —                   | No function rules; `exposed-secrets` scans lines      |
+| MDX        | —                   | Same as Markdown                                      |
+| HTML       | —                   | Same as Markdown                                      |
 
 ---
 
@@ -171,7 +181,8 @@ Walk repo
                     └── Run per-file rules
                           ├── LargeFileRule
                           ├── LargeFunctionRule
-                          └── HelperSprawlRule (filename check)
+                          ├── HelperSprawlRule (filename check)
+                          └── ExposedSecretsRule (line regexes)
                     └── Run cross-file rules (after all files parsed)
                           ├── DuplicateFunctionsRule (hash map)
                           └── HelperSprawlRule (versioned name clusters)
@@ -246,12 +257,14 @@ slopsniff/
 │           ├── large_file.py
 │           ├── large_function.py
 │           ├── duplicate_functions.py
+│           ├── exposed_secrets.py
 │           └── helper_sprawl.py
 └── tests/
     ├── test_walker.py
     ├── test_large_file.py
     ├── test_large_function.py
     ├── test_duplicate_functions.py
+    ├── test_exposed_secrets.py
     └── test_helper_sprawl.py
 ```
 
@@ -340,7 +353,7 @@ Configure [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/) f
 | Max function lines (warning) | 50                                                                            |
 | Max function lines (high)    | 100                                                                           |
 | Fail threshold               | 20                                                                            |
-| Included extensions          | `.py` `.js` `.ts` `.tsx` `.vue`                                               |
+| Included extensions          | `.py` `.js` `.ts` `.tsx` `.jsx` `.vue` `.md` `.mdx` `.html`                   |
 | Excluded directories         | `.git` `node_modules` `.nuxt` `dist` `build` `.venv` `coverage` `__pycache__` |
 
 ---

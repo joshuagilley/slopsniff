@@ -38,7 +38,7 @@ def test_walk_filters_by_extension(tmp_path: Path) -> None:
 
     extensions = {f.suffix for f in files}
     assert ".py" in extensions
-    assert ".md" not in extensions
+    assert ".md" in extensions
     assert ".txt" not in extensions
 
 
