@@ -257,7 +257,7 @@ slopsniff/
 
 ---
 
-## CI/CD integration
+## Using SlopSniff in CI
 
 ### GitHub Actions
 
@@ -307,6 +307,27 @@ uv run ruff check .
 # Run CLI locally
 uv run slopsniff .
 ```
+
+---
+
+## Release to PyPI
+
+Publishing is automated in [`.github/workflows/publish.yml`](.github/workflows/publish.yml): when a **GitHub Release is published**, Actions builds with `uv build` and uploads to PyPI via trusted publishing (OIDC). Pushing a tag by itself does not run the publish job—you must **publish** a GitHub Release for that tag.
+
+1. **Feature branch** — Branch from `main`, ship changes via PR, merge when CI passes.
+2. **Sync `main`** — `git checkout main && git pull`.
+3. **Version** — Bump `[project].version` in `pyproject.toml` (that value is what PyPI shows). Commit and push to `main` (e.g. `chore: release 0.1.5`).
+4. **Tag + GitHub Release** — Tag `v` + semver to match `pyproject.toml` (e.g. `v0.1.5` for `0.1.5`), push the tag, then create and **Publish** a GitHub Release on that tag (UI: Releases → Draft → pick tag → Publish).
+
+   With [GitHub CLI](https://cli.github.com/):
+
+   ```bash
+   git tag v0.1.5
+   git push origin v0.1.5
+   gh release create v0.1.5 --title "0.1.5" --notes "Brief summary of changes."
+   ```
+
+Configure [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/) for this repo (and the `release` environment in GitHub if you use approval rules).
 
 ---
 
