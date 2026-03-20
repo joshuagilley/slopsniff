@@ -1,7 +1,14 @@
-# slopsniff
+# SlopSniff
 
 <p align="center">
   <img src="assets/logo.png" alt="SlopSniff" width="320" />
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/slopsniff/"><img src="https://img.shields.io/pypi/v/slopsniff.svg" alt="PyPI version" /></a>
+  <a href="https://pypi.org/project/slopsniff/"><img src="https://img.shields.io/pypi/pyversions/slopsniff.svg" alt="Python versions" /></a>
+  <a href="https://github.com/joshuagilley/slopsniff/actions/workflows/ci.yml"><img src="https://github.com/joshuagilley/slopsniff/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://pypi.org/project/slopsniff/"><img src="https://img.shields.io/pypi/dm/slopsniff.svg" alt="Monthly downloads" /></a>
 </p>
 
 A lightweight CLI for catching "slop" in modern codebases before it hardens into team-wide tech debt.
