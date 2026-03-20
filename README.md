@@ -325,26 +325,46 @@ uv run slopsniff .
 
 ## Release to PyPI
 
-Publishing is automated in [`.github/workflows/publish.yml`](.github/workflows/publish.yml): when a **GitHub Release is published**, Actions builds with `uv build` and uploads to PyPI via trusted publishing (OIDC). Pushing a tag by itself does not run the publish job—you must **publish** a GitHub Release for that tag.
+CI is defined in [`.github/workflows/publish.yml`](.github/workflows/publish.yml). It runs when a **GitHub Release is published** (not when you only push a tag). The publish job checks out **the commit that the release’s tag points to**, runs `uv build`, and uploads to PyPI with [trusted publishing](https://docs.pypi.org/trusted-publishers/) (OIDC). Configure the publisher on PyPI once, and use the GitHub `release` environment if you add approval rules.
 
-1. **Feature branch** — Branch from `main`, ship changes via PR, merge when CI passes.
-2. **Sync `main`** — `git checkout main && git pull`.
-3. **Version** — Bump `[project].version` in `pyproject.toml` (that value is what PyPI shows). Commit and push to `main` (e.g. `chore: release 0.1.6`).
-4. **Tag + GitHub Release** — Tag `v` + semver to match `pyproject.toml` (e.g. `v0.1.6` for `0.1.6`), push the tag, then create and **Publish** a GitHub Release on that tag (UI: Releases → Draft → pick tag → Publish).
+### Flow (every new version)
 
-   With [GitHub CLI](https://cli.github.com/):
+1. **Land work on `main`** — Use a feature branch and PR; merge after CI is green.
+2. **Update local `main`** — `git checkout main && git pull origin main`.
+3. **Bump the version** — Set `[project].version` in `pyproject.toml` to the new semver (e.g. `0.1.6`). Keep `src/slopsniff/__init__.py` `__version__` in sync if you expose it.
+4. **Refresh the lockfile** — `uv lock` (this repo vendors the package in `uv.lock`).
+5. **Commit and push `main`** — Stage `pyproject.toml`, `uv.lock`, `src/slopsniff/__init__.py`, and anything else you changed; commit (e.g. `chore: release 0.1.6`); `git push origin main`.
+6. **Tag that exact commit** — Tag name must match the version: `v` + semver (`v0.1.6` for `0.1.6`). Create the tag on the commit you just pushed (the one containing the version bump).
+7. **Push the tag** — `git push origin v0.1.6`.
+8. **Create and publish a GitHub Release** for that tag — This triggers the workflow.
 
-   ```bash
-   git tag v0.1.6
-   git push origin v0.1.6
-   gh release create v0.1.6 --title "0.1.6" --notes "Brief summary of changes."
-   ```
+**CLI (steps 6–8):**
 
-Configure [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/) for this repo (and the `release` environment in GitHub if you use approval rules).
+```bash
+# After main is pushed with the new pyproject.toml version:
+git tag v0.1.6
+git push origin v0.1.6
+gh release create v0.1.6 --title "0.1.6" --notes "What changed in this release."
+```
 
-**If publish fails with `HTTPError: 400 Bad Request`:** PyPI rejects uploading a **filename that already exists** (wheel and sdist names include the version). That almost always means **that version is already on PyPI**.
+**UI:** GitHub → **Releases** → **Draft a new release** → choose tag `v0.1.6` → **Publish release**.
 
-**Re-running a release never picks up `main`.** “Re-run all jobs” on an old tag checks out that tag again, so `uv build` keeps producing the same filenames and PyPI may reject duplicates. **Fix:** merge your bumped `pyproject.toml` on `main`, create a **new** tag (e.g. **`v0.1.6`**) on that commit, push it, then **create a new GitHub Release** for that tag and publish it. Do not re-run the old release workflow when you need a new version. Deleting a GitHub Release does not remove files from PyPI.
+### If PyPI upload fails (`HTTPError: 400 Bad Request`)
+
+PyPI rejects uploads when a **file name already exists** (e.g. `slopsniff-0.1.6-py3-none-any.whl`). That version is already published; you cannot replace it by re-running CI.
+
+- **Fix:** Bump to a **new** semver in `pyproject.toml`, push `main`, then a **new** tag and **new** GitHub Release (`v0.1.7`, etc.). Deleting a GitHub Release does **not** remove files from PyPI.
+
+### If `gh release create` fails (`HTTP 422: Release.tag_name already exists`)
+
+A **GitHub Release** already exists for that tag. You cannot create a second one with the same name.
+
+- **To retry PyPI only:** Actions → **Publish to PyPI** → open the run for that release → **Re-run failed jobs** (or re-run all). That still builds the **tag’s commit**—it does not read latest `main`.
+- **To ship new code:** New version in `pyproject.toml`, new tag, new release (see flow above).
+
+### Re-running workflows vs. new versions
+
+**Re-run** uses the **same tag and commit** as the original release event. It never picks up newer commits on `main`. If you need different artifacts on PyPI, you need a **new version number**, **new tag**, and **new release**.
 
 ---
 
