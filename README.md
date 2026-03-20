@@ -1,5 +1,9 @@
 # SlopSniff
 
+<p align="center">
+  <img src="assets/logo.png" alt="SlopSniff" width="320" />
+</p>
+
 A lightweight CLI for catching "slop" in modern codebases before it hardens into team-wide tech debt.
 
 SlopSniff is not trying to detect whether code was written by AI. It is trying to detect the kinds of patterns that show up when teams move too fast, overgenerate code, or skip the cleanup pass — giant files, copy-pasted functions, versioned helper sprawl, and everything else that quietly becomes the norm.
