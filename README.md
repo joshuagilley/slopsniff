@@ -324,18 +324,6 @@ uv run slopsniff .
 
 ---
 
-## Why I built this
-
-AI has changed how code gets written. Not just for junior developers or people learning on the job — for everyone. Senior engineers who know exactly what good code looks like are shipping more of it faster than ever, and some of it is getting into main before anyone has had a chance to really look at it.
-
-That's not a failure of discipline. It's a workflow problem. When you can generate a working function in thirty seconds, the refine-and-consolidate pass that used to happen naturally during the writing process gets skipped. You end up with code that works, passes a review, maybe even passes your tests — but quietly adds weight to the codebase. A utility file that should have been three focused modules. A function that does six things. The same transformation logic implemented twice because nobody noticed it already existed in a helper somewhere.
-
-This compounds. One file at 600 lines is fine. Ten files at 600 lines, all named some variation of `utils` or `helpers`, with overlapping responsibilities and no clear owner — that's how a codebase becomes expensive to work in. Nobody planned it. It accumulated.
-
-SlopSniff is a lightweight smoke alarm for that kind of drift. It runs in CI, scores the findings, and fails the build when the slop score crosses a threshold you control. It does not replace a real code review. It does not catch everything. But it does create a feedback loop early enough in the pipeline to matter — before the pattern hardens, before the duplication spreads, before the next person has to navigate a file they did not write and cannot easily reason about.
-
-The rules in the first version are simple by design: large files, large functions, duplicate function bodies, and helper sprawl. Deterministic, explainable, fast. The goal was not to build something clever. The goal was to build something that teams would actually leave running.
-
 ## Roadmap
 
 - [ ] `.slopsniff.toml` config file support
