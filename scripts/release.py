@@ -133,6 +133,27 @@ def _assert_expected_repo(expected: str | None, *, dry_run: bool) -> None:
         )
 
 
+def _commit_release(semver: str, *, dry_run: bool) -> None:
+    cmd = ["git", "commit", "-m", f"chore: release {semver}"]
+    print("+", " ".join(cmd))
+    if dry_run:
+        return
+
+    first = subprocess.run(cmd, cwd=_ROOT)
+    if first.returncode == 0:
+        return
+
+    # Common case: pre-commit formatter modified tracked files, so restage and retry once.
+    if _git_porcelain():
+        print("+ git add -u")
+        subprocess.run(["git", "add", "-u"], cwd=_ROOT, check=True)
+        print("+", " ".join(cmd))
+        subprocess.run(cmd, cwd=_ROOT, check=True)
+        return
+
+    raise subprocess.CalledProcessError(first.returncode, cmd)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="SlopSniff release: version bump through gh release.",
@@ -199,7 +220,7 @@ def main() -> None:
 
     paths = ["pyproject.toml", "uv.lock", "src/slopsniff/__init__.py"]
     _run(["git", "add", *paths], dry_run=dry)
-    _run(["git", "commit", "-m", f"chore: release {semver}"], dry_run=dry)
+    _commit_release(semver, dry_run=dry)
     _run(["git", "push", "origin", "main"], dry_run=dry)
     _run(["git", "tag", tag], dry_run=dry)
     _run(["git", "push", "origin", tag], dry_run=dry)
