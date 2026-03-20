@@ -60,5 +60,5 @@ def scan(root: Path, config: Config) -> ScanResult:
         findings=all_findings,
         total_score=total_score,
         files_scanned=len(files),
-        passed=total_score < config.fail_threshold,
+        passed=total_score <= config.fail_threshold,
     )

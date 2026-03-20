@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: slopsniff
         name: slopsniff
-        entry: uv run slopsniff . --fail-threshold 10
+        entry: uv run slopsniff . --fail-threshold 0
         language: system
         pass_filenames: false
         always_run: true

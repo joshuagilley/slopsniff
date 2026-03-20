@@ -154,31 +154,31 @@ def _commit_release(semver: str, *, dry_run: bool) -> None:
     raise subprocess.CalledProcessError(first.returncode, cmd)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
+def _build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
         description="SlopSniff release: version bump through gh release.",
     )
-    parser.add_argument(
+    p.add_argument(
         "version",
         help='Semver, e.g. 0.1.7 or v0.1.7 (Git tag will be "v" + semver).',
     )
-    parser.add_argument(
+    p.add_argument(
         "--dry-run",
         action="store_true",
         help="Print commands only; change nothing.",
     )
-    parser.add_argument("--no-pull", action="store_true", help="Skip git pull origin main.")
-    parser.add_argument(
+    p.add_argument("--no-pull", action="store_true", help="Skip git pull origin main.")
+    p.add_argument(
         "--allow-dirty",
         action="store_true",
         help="Allow starting with a dirty working tree (unsafe).",
     )
-    parser.add_argument(
+    p.add_argument(
         "--notes-file",
         metavar="PATH",
         help="Pass to gh release create as --notes-file (default: --generate-notes).",
     )
-    parser.add_argument(
+    p.add_argument(
         "--expect-repo",
         metavar="OWNER/REPO",
         help=(
@@ -186,63 +186,86 @@ def main() -> None:
             "Default: env SLOPSNIFF_RELEASE_EXPECT_REPO."
         ),
     )
-    args = parser.parse_args()
+    return p
 
-    raw = args.version.strip()
+
+def _parse_semver(version_arg: str) -> tuple[str, str]:
+    raw = version_arg.strip()
     semver = raw.removeprefix("v").removeprefix("V")
     if not _VERSION_RE.match(semver):
-        sys.exit(f"error: expected semver like 0.1.7, got {args.version!r}")
-    tag = f"v{semver}"
+        sys.exit(f"error: expected semver like 0.1.7, got {version_arg!r}")
+    return semver, f"v{semver}"
 
-    dry = args.dry_run
 
-    expect_repo = (
+def _expect_repo_from_env_and_args(args: argparse.Namespace) -> str | None:
+    return (
         args.expect_repo or os.environ.get("SLOPSNIFF_RELEASE_EXPECT_REPO") or ""
     ).strip() or None
 
-    if not dry:
-        if _current_branch() != "main":
-            sys.exit("error: must be on branch main")
-        dirty = _git_porcelain()
-        if dirty and not args.allow_dirty:
-            sys.exit("error: working tree is not clean (commit/stash first, or --allow-dirty)")
-        _assert_expected_repo(expect_repo, dry_run=False)
 
-    else:
+def _preflight(args: argparse.Namespace, expect_repo: str | None, *, dry_run: bool) -> None:
+    if dry_run:
         _assert_expected_repo(expect_repo, dry_run=True)
+        return
+    if _current_branch() != "main":
+        sys.exit("error: must be on branch main")
+    dirty = _git_porcelain()
+    if dirty and not args.allow_dirty:
+        sys.exit("error: working tree is not clean (commit/stash first, or --allow-dirty)")
+    _assert_expected_repo(expect_repo, dry_run=False)
 
-    if not args.no_pull:
-        _run(["git", "pull", "origin", "main"], dry_run=dry)
 
-    _bump_pyproject(semver, dry_run=dry)
-    _bump_init(semver, dry_run=dry)
-    _run(["uv", "lock"], dry_run=dry)
-
-    paths = ["pyproject.toml", "uv.lock", "src/slopsniff/__init__.py"]
-    _run(["git", "add", *paths], dry_run=dry)
-    _commit_release(semver, dry_run=dry)
-    _run(["git", "push", "origin", "main"], dry_run=dry)
-    _run(["git", "tag", tag], dry_run=dry)
-    _run(["git", "push", "origin", tag], dry_run=dry)
-
-    gh_cmd = [
-        "gh",
-        "release",
-        "create",
-        tag,
-        "--title",
-        semver,
-    ]
-    if args.notes_file:
-        gh_cmd.extend(["--notes-file", args.notes_file])
+def _gh_release_command(tag: str, semver: str, notes_file: str | None) -> list[str]:
+    cmd = ["gh", "release", "create", tag, "--title", semver]
+    if notes_file:
+        cmd.extend(["--notes-file", notes_file])
     else:
-        gh_cmd.append("--generate-notes")
-    _run(gh_cmd, dry_run=dry)
+        cmd.append("--generate-notes")
+    return cmd
 
-    if dry:
+
+def _run_publish_pipeline(
+    semver: str,
+    tag: str,
+    *,
+    no_pull: bool,
+    notes_file: str | None,
+    dry_run: bool,
+) -> None:
+    if not no_pull:
+        _run(["git", "pull", "origin", "main"], dry_run=dry_run)
+    _bump_pyproject(semver, dry_run=dry_run)
+    _bump_init(semver, dry_run=dry_run)
+    _run(["uv", "lock"], dry_run=dry_run)
+    staged = ["pyproject.toml", "uv.lock", "src/slopsniff/__init__.py"]
+    _run(["git", "add", *staged], dry_run=dry_run)
+    _commit_release(semver, dry_run=dry_run)
+    _run(["git", "push", "origin", "main"], dry_run=dry_run)
+    _run(["git", "tag", tag], dry_run=dry_run)
+    _run(["git", "push", "origin", tag], dry_run=dry_run)
+    _run(_gh_release_command(tag, semver, notes_file), dry_run=dry_run)
+
+
+def _print_finish(tag: str, *, dry_run: bool) -> None:
+    if dry_run:
         print("\n(dry-run: no files or git remotes were changed)")
     else:
         print(f"\nDone. GitHub release for {tag} should trigger Publish to PyPI.")
+
+
+def main() -> None:
+    args = _build_parser().parse_args()
+    semver, tag = _parse_semver(args.version)
+    expect_repo = _expect_repo_from_env_and_args(args)
+    _preflight(args, expect_repo, dry_run=args.dry_run)
+    _run_publish_pipeline(
+        semver,
+        tag,
+        no_pull=args.no_pull,
+        notes_file=args.notes_file,
+        dry_run=args.dry_run,
+    )
+    _print_finish(tag, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
