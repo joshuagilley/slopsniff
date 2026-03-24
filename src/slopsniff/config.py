@@ -47,31 +47,67 @@ class Config:
     include_rules: list[str] | None = None
 
 
-def _normalize_include_list(values: list[object]) -> list[str]:
-    include: list[str] = []
+def _normalize_str_list(values: list[object], key: str) -> list[str]:
+    normalized: list[str] = []
     for value in values:
         if not isinstance(value, str):
-            raise ValueError("Config 'include' entries must be strings")
+            raise ValueError(f"Config '{key}' entries must be strings")
         cleaned = value.strip()
         if cleaned:
-            include.append(cleaned)
-    return include
+            normalized.append(cleaned)
+    return normalized
 
 
-def _extract_json_include(path: Path) -> list[str] | None:
+def _extract_json_config(path: Path) -> dict[str, object]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValueError(f"{path.name} must contain a JSON object")
-    include = data.get("include")
-    if include is None:
-        return None
-    if not isinstance(include, list):
-        raise ValueError("Config 'include' must be an array")
-    return _normalize_include_list(include)
+    return data
 
 
-def load_include_rules(scan_root: Path) -> list[str] | None:
+def load_config_overrides(scan_root: Path) -> dict[str, object] | None:
     json_path = scan_root / "slopsniff.json"
-    if json_path.exists():
-        return _extract_json_include(json_path)
-    return None
+    if not json_path.exists():
+        return None
+
+    data = _extract_json_config(json_path)
+    allowed = {
+        "include",
+        "fail-threshold",
+        "max-file-lines-warning",
+        "max-file-lines-high",
+        "max-function-lines-warning",
+        "max-function-lines-high",
+        "include-extensions",
+        "large-file-extensions",
+        "exclude-dirs",
+        "verbose",
+    }
+
+    unknown = set(data) - allowed
+    if unknown:
+        keys = ", ".join(sorted(unknown))
+        raise ValueError(f"Unknown config key(s): {keys}")
+
+    parsed: dict[str, object] = {}
+    for key, value in data.items():
+        if key in {
+            "fail-threshold",
+            "max-file-lines-warning",
+            "max-file-lines-high",
+            "max-function-lines-warning",
+            "max-function-lines-high",
+        }:
+            if not isinstance(value, int):
+                raise ValueError(f"Config '{key}' must be an integer")
+            parsed[key] = value
+        elif key == "verbose":
+            if not isinstance(value, bool):
+                raise ValueError("Config 'verbose' must be a boolean")
+            parsed[key] = value
+        else:
+            if not isinstance(value, list):
+                raise ValueError(f"Config '{key}' must be an array")
+            parsed[key] = _normalize_str_list(value, key)
+
+    return parsed

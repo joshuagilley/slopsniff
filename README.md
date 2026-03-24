@@ -205,21 +205,40 @@ uv run slopsniff . --max-file-lines 300 --max-function-lines 40
 ## Configuration (`slopsniff.json`)
 
 SlopSniff auto-loads `slopsniff.json` from the scan root (the path you pass to `slopsniff`).
-Use `include` to restrict checks to only the rule IDs your team cares about.
+You can tune scoring thresholds, file selection, and enabled rules in one place.
 
 Example:
 
 ```json
 {
+  "fail-threshold": 20,
+  "max-file-lines-warning": 400,
+  "max-file-lines-high": 800,
+  "max-function-lines-warning": 50,
+  "max-function-lines-high": 100,
+  "verbose": false,
+  "include-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue", ".html"],
+  "large-file-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue"],
+  "exclude-dirs": [
+    ".git",
+    "node_modules",
+    ".venv",
+    "tests",
+    "dist",
+    "build"
+  ],
   "include": [
     "fallback-defaults",
     "exposed-secrets",
-    "large-function"
+    "large-function",
+    "large-file",
+    "duplicate-functions",
+    "helper-sprawl"
   ]
 }
 ```
 
-Available rule IDs:
+Rule IDs for `include`:
 - `fallback-defaults`
 - `exposed-secrets`
 - `large-function`
@@ -228,8 +247,9 @@ Available rule IDs:
 - `helper-sprawl`
 
 Notes:
+- CLI flags still work and override file values (for example, `--fail-threshold`).
 - If `include` is omitted, all rules run.
-- Unknown rule IDs fail fast with a clear error so CI config mistakes are visible.
+- Unknown keys and unknown rule IDs fail fast with clear errors.
 
 ---
 

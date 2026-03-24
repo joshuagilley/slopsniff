@@ -1,4 +1,8 @@
 {
+  "fail-threshold": 0,
+  "max-file-lines-warning": 400,
+  "max-function-lines-warning": 50,
+  "exclude-dirs": [".git", "node_modules", "tests"],
   "include": [
     "fallback-defaults",
     "exposed-secrets",
