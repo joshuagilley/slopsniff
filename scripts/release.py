@@ -250,7 +250,7 @@ def _print_finish(tag: str, *, dry_run: bool) -> None:
     if dry_run:
         print("\n(dry-run: no files or git remotes were changed)")
     else:
-        print(f"\nDone. GitHub release for {tag} should trigger Publish to PyPI.")
+        print(f"\nDone. GitHub release for {tag} should trigger Publish to PyPI and npm.")
 
 
 def main() -> None:
