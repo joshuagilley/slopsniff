@@ -1,7 +1,9 @@
 {
   "fail-threshold": 20,
   "max-file-lines-warning": 400,
+  "max-file-lines-high": 800,
   "max-function-lines-warning": 50,
+  "max-function-lines-high": 100,
   "exclude-severities": [],
   "exclude-dirs": [
     ".git",

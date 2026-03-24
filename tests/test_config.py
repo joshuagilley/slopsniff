@@ -12,7 +12,9 @@ def test_load_config_overrides_from_json(tmp_path) -> None:
                 "include": ["fallback-defaults", "exposed-secrets"],
                 "fail-threshold": 12,
                 "max-file-lines-warning": 320,
+                "max-file-lines-high": 900,
                 "max-function-lines-warning": 40,
+                "max-function-lines-high": 120,
                 "include-extensions": [".py", ".ts"],
                 "exclude-dirs": [".git", "tests"],
                 "exclude-files": ["temp_slop_examples.py", "src/fixtures/example.py"],
@@ -26,7 +28,9 @@ def test_load_config_overrides_from_json(tmp_path) -> None:
     assert cfg["include"] == ["fallback-defaults", "exposed-secrets"]
     assert cfg["fail-threshold"] == 12
     assert cfg["max-file-lines-warning"] == 320
+    assert cfg["max-file-lines-high"] == 900
     assert cfg["max-function-lines-warning"] == 40
+    assert cfg["max-function-lines-high"] == 120
     assert cfg["include-extensions"] == [".py", ".ts"]
     assert cfg["exclude-dirs"] == [".git", "tests"]
     assert cfg["exclude-files"] == ["temp_slop_examples.py", "src/fixtures/example.py"]

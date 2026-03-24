@@ -313,6 +313,19 @@ Rule IDs for `include`:
 - `duplicate-functions`
 - `helper-sprawl`
 
+### File and function size (line counts)
+
+These keys control the **`large-file`** and **`large-function`** rules (line counts include the whole file or function body).
+
+| Key | Default | Effect |
+|-----|---------|--------|
+| `max-file-lines-warning` | `400` | At or above this line count → **medium** `large-file` finding (only for extensions in `large-file-extensions`). |
+| `max-file-lines-high` | `800` | At or above this line count → **high** `large-file` finding. |
+| `max-function-lines-warning` | `50` | At or above this line count → **medium** `large-function` finding. |
+| `max-function-lines-high` | `100` | At or above this line count → **high** `large-function` finding. |
+
+Raise the warning thresholds when large components or test files are normal for your repo (for example `"max-file-lines-warning": 750` so a 592-line file is below the warning cutoff). CLI flags `--max-file-lines` and `--max-function-lines` still override **only** the warning thresholds for a one-off run.
+
 Notes:
 
 - CLI flags still work and override file values (for example, `--fail-threshold`).

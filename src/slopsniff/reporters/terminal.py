@@ -32,7 +32,7 @@ def _display_path(path: Path) -> str:
 
 def _line_range(finding: Finding) -> str:
     if finding.line_start is None:
-        return "?"
+        return "file"
     if finding.line_end is None or finding.line_end == finding.line_start:
         return str(finding.line_start)
     return f"{finding.line_start}-{finding.line_end}"
