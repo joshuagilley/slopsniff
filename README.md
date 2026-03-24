@@ -14,6 +14,153 @@ A lightweight CLI for catching code-quality drift ("slop") before it hardens int
 
 ---
 
+### What it catches
+
+<table>
+<tr>
+<th>Pattern</th>
+<th>Slop</th>
+<th>Better</th>
+</tr>
+
+<tr>
+<td><strong>Fallback defaults</strong><br><sub>Silent primitives that mask missing config</sub></td>
+<td>
+
+```python
+timeout = os.getenv("TIMEOUT", 0)
+```
+
+```js
+const retries = process.env.RETRIES || 0;
+```
+
+</td>
+<td>
+
+```python
+timeout = require_env("TIMEOUT")
+```
+
+```js
+const retries = requireEnv("RETRIES");
+```
+
+</td>
+</tr>
+
+<tr>
+<td><strong>Catch-all primitive returns</strong><br><sub>Flattens every failure into one silent shape</sub></td>
+<td>
+
+```python
+except Exception:
+    return []
+```
+
+```js
+catch (e) { return null; }
+```
+
+</td>
+<td>
+
+```python
+except TimeoutError:
+    logger.warning("upstream timeout")
+    raise
+```
+
+```js
+catch (e) {
+  if (e instanceof RateLimitError) { ... }
+  throw e;
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td><strong>Exposed secrets</strong><br><sub>Credentials committed in source or docs</sub></td>
+<td>
+
+```python
+API_KEY = "sk-proj-abc123..."
+```
+
+</td>
+<td>
+
+```python
+API_KEY = os.environ["API_KEY"]
+```
+
+</td>
+</tr>
+
+<tr>
+<td><strong>Large files &amp; functions</strong><br><sub>Monoliths that resist review and testing</sub></td>
+<td>
+
+```
+scanner.py — 800+ lines
+def do_everything(): — 120 lines
+```
+
+</td>
+<td>
+
+```
+scanner.py — focused orchestrator
+def scan(): — delegates to helpers
+```
+
+</td>
+</tr>
+
+<tr>
+<td><strong>Duplicate functions</strong><br><sub>Copy-pasted logic across files</sub></td>
+<td>
+
+```
+utils.py:  def format_date(d): ...
+helpers.py: def format_date(d): ...  # identical
+```
+
+</td>
+<td>
+
+```
+dates.py: def format_date(d): ...  # single source
+```
+
+</td>
+</tr>
+
+<tr>
+<td><strong>Helper sprawl</strong><br><sub>Vague catch-all files and versioned copies</sub></td>
+<td>
+
+```
+utils.py, helpers.py, common.py
+send_email_v2(), format_data_old()
+```
+
+</td>
+<td>
+
+```
+email_service.py, formatters.py
+send_email(), format_data()
+```
+
+</td>
+</tr>
+</table>
+
+---
+
 ## Local Setup (Open Source Dev)
 
 ```bash

@@ -43,6 +43,7 @@ def test_walk_excludes_tests_dir_by_default(tmp_path: Path) -> None:
 def test_walk_filters_by_extension(tmp_path: Path) -> None:
     (tmp_path / "script.py").write_text("x = 1")
     (tmp_path / "readme.md").write_text("# readme")
+    (tmp_path / "guide.mdx").write_text("# mdx")
     (tmp_path / "notes.txt").write_text("some notes")
 
     config = Config()
@@ -50,7 +51,8 @@ def test_walk_filters_by_extension(tmp_path: Path) -> None:
 
     extensions = {f.suffix for f in files}
     assert ".py" in extensions
-    assert ".md" in extensions
+    assert ".md" not in extensions
+    assert ".mdx" not in extensions
     assert ".txt" not in extensions
 
 

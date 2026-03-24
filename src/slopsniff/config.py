@@ -23,8 +23,6 @@ class Config:
             ".tsx",
             ".jsx",
             ".vue",
-            ".md",
-            ".mdx",
             ".html",
         ]
     )
