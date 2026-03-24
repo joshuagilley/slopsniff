@@ -23,9 +23,45 @@ npx slopsniff-cli .
 ```
 
 Notes:
+
 - The npm package is a wrapper around the Python CLI.
 - It runs `slopsniff` via `uv tool run --from slopsniff ...`.
 - On macOS/Linux, it will attempt to install `uv` automatically if missing.
+
+---
+
+## JavaScript/TypeScript Setup
+
+From your JS/TS project root, choose one of these:
+
+```bash
+# One-off run (no install)
+npx slopsniff-cli .
+```
+
+```bash
+# Install in your project and run via script
+npm i -D slopsniff-cli
+```
+
+Add scripts to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "slopsniff": "slopsniff .",
+    "slopsniff:strict": "slopsniff . --fail-threshold 0 --format json"
+  }
+}
+```
+
+Then run:
+
+```bash
+npm run slopsniff
+```
+
+Tip: Commit a `slopsniff.json` at project root to configure included rules and exclusions.
 
 ---
 
@@ -194,6 +230,7 @@ env PYTHONPATH=src uv run python -m slopsniff.cli . --fail-threshold 30
 ```
 
 Notes:
+
 - Pre-commit runs `ruff`, `ruff-format`, `slopsniff`, and `pytest`.
 - Terminal output uses [Rich](https://github.com/textualize/rich). Use `--format json` for machine output.
 - For local runs, prefer `env PYTHONPATH=src uv run python -m slopsniff.cli ...`.
@@ -236,14 +273,7 @@ Example:
   "include-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue", ".html"],
   "large-file-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue"],
   "exclude-files": ["temp_slop_examples.py", "src/fixtures/example.py"],
-  "exclude-dirs": [
-    ".git",
-    "node_modules",
-    ".venv",
-    "tests",
-    "dist",
-    "build"
-  ],
+  "exclude-dirs": [".git", "node_modules", ".venv", "tests", "dist", "build"],
   "include": [
     "fallback-defaults",
     "exposed-secrets",
@@ -256,6 +286,7 @@ Example:
 ```
 
 Rule IDs for `include`:
+
 - `fallback-defaults`
 - `exposed-secrets`
 - `large-function`
@@ -264,6 +295,7 @@ Rule IDs for `include`:
 - `helper-sprawl`
 
 Notes:
+
 - CLI flags still work and override file values (for example, `--fail-threshold`).
 - If `include` is omitted, all rules run.
 - `exclude-files` accepts either bare filenames or scan-root-relative paths.
@@ -304,6 +336,7 @@ uv run python scripts/release.py v0.1.9
 ```
 
 What it does:
+
 1. Pulls `main`.
 2. Bumps version in `pyproject.toml` and `src/slopsniff/__init__.py`.
 3. Runs `uv lock`.
@@ -313,6 +346,7 @@ What it does:
 7. Creates/publishes a GitHub release with `gh release create`.
 
 Useful flags:
+
 - `--dry-run`
 - `--no-pull`
 - `--allow-dirty`
@@ -320,6 +354,7 @@ Useful flags:
 - `--expect-repo OWNER/REPO`
 
 Optional guard:
+
 - Set `SLOPSNIFF_RELEASE_EXPECT_REPO=joshuagilley/slopsniff` to prevent accidental release from a fork clone.
 
 ### If release/publish fails
@@ -333,6 +368,7 @@ Optional guard:
 ## Minimal Architecture Notes
 
 Pipeline:
+
 1. Walk repo and collect included files.
 2. Parse functions (`ast` for Python, heuristic parser for JS/TS/TSX/JSX/Vue).
 3. Run per-file rules.
@@ -341,6 +377,7 @@ Pipeline:
 6. Report (`terminal` via Rich or `json`) and exit non-zero on threshold fail.
 
 Key paths:
+
 - `src/slopsniff/cli.py` — CLI entrypoint
 - `src/slopsniff/scanner.py` — orchestration
 - `src/slopsniff/rules/` — rule implementations
