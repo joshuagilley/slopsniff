@@ -19,7 +19,7 @@ A lightweight CLI for catching code-quality drift ("slop") before it hardens int
 Install/run from JavaScript projects via npm:
 
 ```bash
-npx @joshuadgilley/slopsniff .
+npx slopsniff-cli .
 ```
 
 Notes:

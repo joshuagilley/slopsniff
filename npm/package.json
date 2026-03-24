@@ -1,5 +1,5 @@
 {
-  "name": "@joshuadgilley/slopsniff",
+  "name": "slopsniff-cli",
   "version": "0.0.1",
   "description": "npm wrapper for the SlopSniff Python CLI",
   "license": "MIT",
@@ -13,6 +13,7 @@
   },
   "type": "commonjs",
   "bin": {
+    "slopsniff-cli": "bin/slopsniff.js",
     "slopsniff": "bin/slopsniff.js"
   },
   "files": [
