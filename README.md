@@ -32,6 +32,8 @@ npx slopsniff-cli .
 npm i -D slopsniff-cli
 ```
 
+`npm i -D slopsniff-cli` will create a starter `slopsniff.json` in your project root if one does not already exist.
+
 ```json
 {
   "scripts": {
