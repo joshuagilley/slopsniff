@@ -14,37 +14,23 @@ A lightweight CLI for catching code-quality drift ("slop") before it hardens int
 
 ---
 
-## npm Usage
+## Quick Start
 
-Install/run from JavaScript projects via npm:
+<table>
+<tr>
+<th>JavaScript / TypeScript (app repo)</th>
+<th>Python (this repo / local dev)</th>
+</tr>
+<tr>
+<td>
 
 ```bash
+# One-off run
 npx slopsniff-cli .
-```
 
-Notes:
-
-- The npm package is a wrapper around the Python CLI.
-- It runs `slopsniff` via `uv tool run --from slopsniff ...`.
-- On macOS/Linux, it will attempt to install `uv` automatically if missing.
-
----
-
-## JavaScript/TypeScript Setup
-
-From your JS/TS project root, choose one of these:
-
-```bash
-# One-off run (no install)
-npx slopsniff-cli .
-```
-
-```bash
-# Install in your project and run via script
+# or install locally
 npm i -D slopsniff-cli
 ```
-
-Add scripts to your `package.json`:
 
 ```json
 {
@@ -55,13 +41,32 @@ Add scripts to your `package.json`:
 }
 ```
 
-Then run:
+</td>
+<td>
 
 ```bash
-npm run slopsniff
+git clone https://github.com/joshuagilley/slopsniff
+cd slopsniff
+uv sync --dev
+pre-commit install
 ```
 
-Tip: Commit a `slopsniff.json` at project root to configure included rules and exclusions.
+```bash
+uv run pytest
+uv run ruff check .
+env PYTHONPATH=src uv run python -m slopsniff.cli . --fail-threshold 30
+```
+
+</td>
+</tr>
+</table>
+
+Notes:
+
+- The npm package is a wrapper around the Python CLI.
+- It runs `slopsniff` via `uv tool run --from slopsniff ...`.
+- On macOS/Linux, it will attempt to install `uv` automatically if missing.
+- Commit a `slopsniff.json` in your project root to configure rules and exclusions.
 
 ---
 
