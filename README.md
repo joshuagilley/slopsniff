@@ -175,12 +175,13 @@ Quick sanity run:
 ```bash
 uv run pytest
 uv run ruff check .
-uv run slopsniff . --fail-threshold 30
+env PYTHONPATH=src uv run python -m slopsniff.cli . --fail-threshold 30
 ```
 
 Notes:
 - Pre-commit runs `ruff`, `ruff-format`, `slopsniff`, and `pytest`.
 - Terminal output uses [Rich](https://github.com/textualize/rich). Use `--format json` for machine output.
+- For local runs, prefer `env PYTHONPATH=src uv run python -m slopsniff.cli ...`.
 
 ---
 
@@ -188,16 +189,16 @@ Notes:
 
 ```bash
 # Scan current directory
-uv run slopsniff .
+env PYTHONPATH=src uv run python -m slopsniff.cli .
 
 # Scan a specific path
-uv run slopsniff ./src
+env PYTHONPATH=src uv run python -m slopsniff.cli ./src
 
 # JSON output for CI/machines
-uv run slopsniff . --format json
+env PYTHONPATH=src uv run python -m slopsniff.cli . --format json
 
 # Override thresholds ad hoc
-uv run slopsniff . --max-file-lines 300 --max-function-lines 40
+env PYTHONPATH=src uv run python -m slopsniff.cli . --max-file-lines 300 --max-function-lines 40
 ```
 
 ---
@@ -263,7 +264,7 @@ Standard flow:
    ```bash
    uv run pytest
    uv run ruff check .
-   uv run slopsniff . --fail-threshold 30
+   env PYTHONPATH=src uv run python -m slopsniff.cli . --fail-threshold 30
    ```
 4. Commit with a clear message.
 5. Open a PR and merge after CI passes.

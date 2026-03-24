@@ -15,6 +15,7 @@ def test_load_config_overrides_from_json(tmp_path) -> None:
                 "max-function-lines-warning": 40,
                 "include-extensions": [".py", ".ts"],
                 "exclude-dirs": [".git", "tests"],
+                "exclude-files": ["temp_slop_examples.py", "src/fixtures/example.py"],
                 "verbose": True,
             }
         )
@@ -27,6 +28,7 @@ def test_load_config_overrides_from_json(tmp_path) -> None:
     assert cfg["max-function-lines-warning"] == 40
     assert cfg["include-extensions"] == [".py", ".ts"]
     assert cfg["exclude-dirs"] == [".git", "tests"]
+    assert cfg["exclude-files"] == ["temp_slop_examples.py", "src/fixtures/example.py"]
     assert cfg["verbose"] is True
 
 

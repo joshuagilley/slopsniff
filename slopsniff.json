@@ -2,6 +2,7 @@
   "fail-threshold": 0,
   "max-file-lines-warning": 400,
   "max-function-lines-warning": 50,
+  "exclude-files": ["temp_slop_examples.py"],
   "exclude-dirs": [
     ".git",
     "node_modules",

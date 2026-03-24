@@ -75,3 +75,27 @@ def test_walk_includes_nested_files(tmp_path: Path) -> None:
     files = walk_repo(tmp_path, config)
 
     assert any(f.name == "routes.py" for f in files)
+
+
+def test_walk_excludes_specific_file_by_name(tmp_path: Path) -> None:
+    (tmp_path / "temp_slop_examples.py").write_text("x = 1")
+    (tmp_path / "keep.py").write_text("y = 2")
+
+    config = Config(exclude_files=["temp_slop_examples.py"])
+    files = walk_repo(tmp_path, config)
+
+    assert not any(f.name == "temp_slop_examples.py" for f in files)
+    assert any(f.name == "keep.py" for f in files)
+
+
+def test_walk_excludes_specific_file_by_relative_path(tmp_path: Path) -> None:
+    nested = tmp_path / "src" / "fixtures"
+    nested.mkdir(parents=True)
+    (nested / "example.py").write_text("x = 1")
+    (tmp_path / "src" / "main.py").write_text("y = 2")
+
+    config = Config(exclude_files=["src/fixtures/example.py"])
+    files = walk_repo(tmp_path, config)
+
+    assert not any(str(f).endswith("src/fixtures/example.py") for f in files)
+    assert any(str(f).endswith("src/main.py") for f in files)

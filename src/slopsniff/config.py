@@ -43,6 +43,7 @@ class Config:
             ".ruff_cache",
         ]
     )
+    exclude_files: list[str] = field(default_factory=list)
     verbose: bool = False
     include_rules: list[str] | None = None
 
@@ -81,6 +82,7 @@ def load_config_overrides(scan_root: Path) -> dict[str, object] | None:
         "include-extensions",
         "large-file-extensions",
         "exclude-dirs",
+        "exclude-files",
         "verbose",
     }
 

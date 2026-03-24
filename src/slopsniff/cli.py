@@ -51,6 +51,8 @@ def _build_config(
         config.large_file_extensions = frozenset(overrides["large-file-extensions"])  # type: ignore[arg-type]
     if "exclude-dirs" in overrides:
         config.exclude_dirs = overrides["exclude-dirs"]  # type: ignore[assignment]
+    if "exclude-files" in overrides:
+        config.exclude_files = overrides["exclude-files"]  # type: ignore[assignment]
     if "verbose" in overrides:
         config.verbose = overrides["verbose"]  # type: ignore[assignment]
 
