@@ -32,7 +32,7 @@ npx slopsniff-cli .
 npm i -D slopsniff-cli
 ```
 
-`npm i -D slopsniff-cli` will create a starter `slopsniff.json` in your project root if one does not already exist.
+`npm i -D slopsniff-cli` runs a postinstall step: it creates a starter `slopsniff.json` if missing, or **merges in any new keys** from the package template that your file does not yet have (your values are never overwritten). Re-installing or upgrading the package is how you pick up newly documented options without losing custom settings.
 
 ```json
 {
@@ -280,6 +280,7 @@ Example:
   "include-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue", ".html"],
   "large-file-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue"],
   "exclude-files": ["temp_slop_examples.py", "src/fixtures/example.py"],
+  "exclude-severities": ["low"],
   "exclude-dirs": [".git", "node_modules", ".venv", "tests", "dist", "build"],
   "include": [
     "fallback-defaults",
@@ -306,6 +307,7 @@ Notes:
 - CLI flags still work and override file values (for example, `--fail-threshold`).
 - If `include` is omitted, all rules run.
 - `exclude-files` accepts either bare filenames or scan-root-relative paths.
+- `exclude-severities` is an array of `low`, `medium`, and/or `high`; matching findings are dropped from output and from the total score (case-insensitive).
 - Unknown keys and unknown rule IDs fail fast with clear errors.
 
 ---

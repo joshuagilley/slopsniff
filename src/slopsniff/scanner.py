@@ -118,6 +118,8 @@ def scan(root: Path, config: Config) -> ScanResult:
         *_run_per_file_rules(contexts, rule_set.per_file, enabled_rule_ids),
         *_run_cross_file_rules(contexts, rule_set.cross_file, enabled_rule_ids),
     ]
+    if config.exclude_severities:
+        findings = [f for f in findings if f.severity not in config.exclude_severities]
     total_score = compute_score(findings)
     return ScanResult(
         findings=findings,

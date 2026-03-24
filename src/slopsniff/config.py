@@ -8,6 +8,36 @@ def _default_large_file_extensions() -> frozenset[str]:
     return frozenset({".py", ".js", ".ts", ".tsx", ".jsx", ".vue"})
 
 
+_VALID_SEVERITIES = frozenset({"low", "medium", "high"})
+
+_CONFIG_ALLOWED_KEYS = frozenset(
+    {
+        "include",
+        "fail-threshold",
+        "max-file-lines-warning",
+        "max-file-lines-high",
+        "max-function-lines-warning",
+        "max-function-lines-high",
+        "include-extensions",
+        "large-file-extensions",
+        "exclude-dirs",
+        "exclude-files",
+        "exclude-severities",
+        "verbose",
+    }
+)
+
+_CONFIG_INT_KEYS = frozenset(
+    {
+        "fail-threshold",
+        "max-file-lines-warning",
+        "max-file-lines-high",
+        "max-function-lines-warning",
+        "max-function-lines-high",
+    }
+)
+
+
 @dataclass
 class Config:
     max_file_lines_warning: int = 400
@@ -44,6 +74,7 @@ class Config:
         ]
     )
     exclude_files: list[str] = field(default_factory=list)
+    exclude_severities: frozenset[str] = field(default_factory=frozenset)
     verbose: bool = False
     include_rules: list[str] | None = None
 
@@ -66,50 +97,41 @@ def _extract_json_config(path: Path) -> dict[str, object]:
     return data
 
 
+def _parse_config_value(key: str, value: object) -> object:
+    if key in _CONFIG_INT_KEYS:
+        if not isinstance(value, int):
+            raise ValueError(f"Config '{key}' must be an integer")
+        return value
+    if key == "verbose":
+        if not isinstance(value, bool):
+            raise ValueError("Config 'verbose' must be a boolean")
+        return value
+    if key == "exclude-severities":
+        if not isinstance(value, list):
+            raise ValueError("Config 'exclude-severities' must be an array")
+        raw = _normalize_str_list(value, "exclude-severities")
+        normalized = [s.lower() for s in raw]
+        invalid = [s for s in normalized if s not in _VALID_SEVERITIES]
+        if invalid:
+            bad = ", ".join(sorted(set(invalid)))
+            raise ValueError(
+                f"Config 'exclude-severities' must be only low, medium, high; invalid: {bad}"
+            )
+        return normalized
+    if not isinstance(value, list):
+        raise ValueError(f"Config '{key}' must be an array")
+    return _normalize_str_list(value, key)
+
+
 def load_config_overrides(scan_root: Path) -> dict[str, object] | None:
     json_path = scan_root / "slopsniff.json"
     if not json_path.exists():
         return None
 
     data = _extract_json_config(json_path)
-    allowed = {
-        "include",
-        "fail-threshold",
-        "max-file-lines-warning",
-        "max-file-lines-high",
-        "max-function-lines-warning",
-        "max-function-lines-high",
-        "include-extensions",
-        "large-file-extensions",
-        "exclude-dirs",
-        "exclude-files",
-        "verbose",
-    }
-
-    unknown = set(data) - allowed
+    unknown = set(data) - _CONFIG_ALLOWED_KEYS
     if unknown:
         keys = ", ".join(sorted(unknown))
         raise ValueError(f"Unknown config key(s): {keys}")
 
-    parsed: dict[str, object] = {}
-    for key, value in data.items():
-        if key in {
-            "fail-threshold",
-            "max-file-lines-warning",
-            "max-file-lines-high",
-            "max-function-lines-warning",
-            "max-function-lines-high",
-        }:
-            if not isinstance(value, int):
-                raise ValueError(f"Config '{key}' must be an integer")
-            parsed[key] = value
-        elif key == "verbose":
-            if not isinstance(value, bool):
-                raise ValueError("Config 'verbose' must be a boolean")
-            parsed[key] = value
-        else:
-            if not isinstance(value, list):
-                raise ValueError(f"Config '{key}' must be an array")
-            parsed[key] = _normalize_str_list(value, key)
-
-    return parsed
+    return {key: _parse_config_value(key, value) for key, value in data.items()}

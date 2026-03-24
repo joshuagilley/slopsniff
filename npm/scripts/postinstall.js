@@ -14,6 +14,28 @@ function shouldSkip() {
   return false;
 }
 
+function readJsonObject(filePath, label) {
+  const raw = fs.readFileSync(filePath, "utf8");
+  const data = JSON.parse(raw);
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error(`${label} must be a JSON object`);
+  }
+  return data;
+}
+
+/** Add keys from template that are missing in existing (does not overwrite user values). */
+function mergeMissingConfigKeys(existing, template) {
+  let added = 0;
+  const out = { ...existing };
+  for (const key of Object.keys(template)) {
+    if (!(key in out)) {
+      out[key] = JSON.parse(JSON.stringify(template[key]));
+      added += 1;
+    }
+  }
+  return { merged: out, added };
+}
+
 function main() {
   if (shouldSkip()) {
     return;
@@ -23,15 +45,34 @@ function main() {
   const targetPath = path.join(projectRoot, "slopsniff.json");
   const templatePath = path.join(__dirname, "..", "templates", "slopsniff.json");
 
-  if (fs.existsSync(targetPath)) {
-    return;
-  }
-
   try {
-    fs.copyFileSync(templatePath, targetPath);
-    console.log("slopsniff-cli: created starter slopsniff.json");
+    const template = readJsonObject(templatePath, "package template");
+
+    if (!fs.existsSync(targetPath)) {
+      fs.copyFileSync(templatePath, targetPath);
+      console.log("slopsniff-cli: created starter slopsniff.json");
+      return;
+    }
+
+    let existing;
+    try {
+      existing = readJsonObject(targetPath, "slopsniff.json");
+    } catch (err) {
+      console.warn(`slopsniff-cli: skipped config merge (${err.message})`);
+      return;
+    }
+
+    const { merged, added } = mergeMissingConfigKeys(existing, template);
+    if (added === 0) {
+      return;
+    }
+
+    fs.writeFileSync(targetPath, `${JSON.stringify(merged, null, 2)}\n`, "utf8");
+    console.log(
+      `slopsniff-cli: added ${added} missing config key(s) to slopsniff.json (existing values unchanged)`
+    );
   } catch (err) {
-    console.warn(`slopsniff-cli: could not create slopsniff.json (${err.message})`);
+    console.warn(`slopsniff-cli: could not update slopsniff.json (${err.message})`);
   }
 }
 

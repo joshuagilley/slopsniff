@@ -16,6 +16,7 @@ def test_load_config_overrides_from_json(tmp_path) -> None:
                 "include-extensions": [".py", ".ts"],
                 "exclude-dirs": [".git", "tests"],
                 "exclude-files": ["temp_slop_examples.py", "src/fixtures/example.py"],
+                "exclude-severities": ["low", "HIGH"],
                 "verbose": True,
             }
         )
@@ -29,6 +30,7 @@ def test_load_config_overrides_from_json(tmp_path) -> None:
     assert cfg["include-extensions"] == [".py", ".ts"]
     assert cfg["exclude-dirs"] == [".git", "tests"]
     assert cfg["exclude-files"] == ["temp_slop_examples.py", "src/fixtures/example.py"]
+    assert cfg["exclude-severities"] == ["low", "high"]
     assert cfg["verbose"] is True
 
 
@@ -45,4 +47,10 @@ def test_load_config_overrides_invalid_json_shape(tmp_path) -> None:
 def test_load_config_overrides_rejects_unknown_key(tmp_path) -> None:
     (tmp_path / "slopsniff.json").write_text(json.dumps({"nope": 1}))
     with pytest.raises(ValueError, match="Unknown config key"):
+        load_config_overrides(tmp_path)
+
+
+def test_load_config_overrides_rejects_invalid_severity(tmp_path) -> None:
+    (tmp_path / "slopsniff.json").write_text(json.dumps({"exclude-severities": ["critical"]}))
+    with pytest.raises(ValueError, match="exclude-severities"):
         load_config_overrides(tmp_path)

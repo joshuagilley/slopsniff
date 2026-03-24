@@ -2,6 +2,7 @@
   "fail-threshold": 20,
   "max-file-lines-warning": 400,
   "max-function-lines-warning": 50,
+  "exclude-severities": [],
   "exclude-dirs": [
     ".git",
     "node_modules",

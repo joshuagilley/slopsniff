@@ -53,6 +53,8 @@ def _build_config(
         config.exclude_dirs = overrides["exclude-dirs"]  # type: ignore[assignment]
     if "exclude-files" in overrides:
         config.exclude_files = overrides["exclude-files"]  # type: ignore[assignment]
+    if "exclude-severities" in overrides:
+        config.exclude_severities = frozenset(overrides["exclude-severities"])  # type: ignore[arg-type]
     if "verbose" in overrides:
         config.verbose = overrides["verbose"]  # type: ignore[assignment]
 
