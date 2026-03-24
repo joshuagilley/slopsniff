@@ -1,6 +1,6 @@
 {
   "name": "@joshuadgilley/slopsniff",
-  "version": "0.0.0-dev",
+  "version": "0.0.1",
   "description": "npm wrapper for the SlopSniff Python CLI",
   "license": "MIT",
   "repository": {
