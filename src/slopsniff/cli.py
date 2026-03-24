@@ -80,6 +80,21 @@ def _render_result(
     terminal_reporter.report(result, verbose=verbose)
 
 
+def _resolve_git_diff_ref(branch: bool, changed_since: str | None) -> str | None:
+    if branch and changed_since is not None:
+        typer.echo("Error: use either --branch or --changed-since, not both.", err=True)
+        raise typer.Exit(1)
+    if branch:
+        return "main"
+    if changed_since is None:
+        return None
+    ref = changed_since.strip() or None
+    if ref is None:
+        typer.echo("Error: --changed-since requires a non-empty ref.", err=True)
+        raise typer.Exit(1)
+    return ref
+
+
 @app.command()
 def scan(
     path: Annotated[str, typer.Argument(help="Path to the directory to scan")] = ".",
@@ -102,26 +117,29 @@ def scan(
         int | None,
         typer.Option("--max-function-lines", help="Override function line warning threshold"),
     ] = None,
+    branch: Annotated[
+        bool,
+        typer.Option("--branch", help="Only files changed vs main (same as --changed-since main)"),
+    ] = False,
+    changed_since: Annotated[
+        str | None,
+        typer.Option(
+            "--changed-since",
+            metavar="REF",
+            help="Only files changed vs ref (git diff REF --name-only --diff-filter=ACMR).",
+        ),
+    ] = None,
 ) -> None:
-    """Scan a codebase for slop patterns.
-
-    Examples:
-
-      slopsniff .
-
-      slopsniff ./src --fail-threshold 30
-
-      slopsniff . --format json
-    """
+    """Scan for slop. Examples: slopsniff .  slopsniff . --branch  slopsniff . -f json."""
     target = _resolve_scan_root(path)
+    ref = _resolve_git_diff_ref(branch, changed_since)
     try:
         config = _build_config(target, fail_threshold, verbose, max_file_lines, max_function_lines)
-        result = _scanner.scan(target, config)
+        result = _scanner.scan(target, config, changed_since=ref)
     except ValueError as exc:
         typer.echo(f"Error: {exc}", err=True)
         raise typer.Exit(1) from exc
     _render_result(result, format, verbose)
-
     if not result.passed:
         raise typer.Exit(1)
 

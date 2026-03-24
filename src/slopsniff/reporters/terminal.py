@@ -1,8 +1,10 @@
+from __future__ import annotations
+
+from collections import defaultdict
+from pathlib import Path
+
 from rich.console import Console
 from rich.markup import escape
-from rich.panel import Panel
-from rich.rule import Rule
-from rich.table import Table
 from rich.text import Text
 
 from ..models import Finding, ScanResult
@@ -21,67 +23,93 @@ _STATUS_STYLE = {
 _SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 
 
-def _format_location(finding: Finding) -> str:
-    loc = finding.file_path
-    if finding.line_start is not None:
-        loc += f":{finding.line_start}"
-        if finding.line_end is not None and finding.line_end != finding.line_start:
-            loc += f"-{finding.line_end}"
-    return loc
+def _display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return path.resolve().as_posix()
 
 
-def _summary_panel(result: ScanResult, status: str) -> Panel:
-    grid = Table.grid(padding=(0, 2))
-    grid.add_column(style="dim", justify="right")
-    grid.add_column()
+def _line_range(finding: Finding) -> str:
+    if finding.line_start is None:
+        return "?"
+    if finding.line_end is None or finding.line_end == finding.line_start:
+        return str(finding.line_start)
+    return f"{finding.line_start}-{finding.line_end}"
 
-    grid.add_row("Files scanned", str(result.files_scanned))
-    grid.add_row("Total score", str(result.total_score))
+
+def _summary_line(result: ScanResult, status: str) -> Text:
+    n = len(result.findings)
+    issues = "issue" if n == 1 else "issues"
     status_style = _STATUS_STYLE.get(status, "white")
-    grid.add_row("Status", Text(status.upper(), style=status_style))
-
-    return Panel(
-        grid,
-        title="[bold white]SlopSniff[/bold white]",
-        title_align="left",
-        border_style="bright_magenta",
-        padding=(1, 2),
+    return Text.assemble(
+        ("slopsniff ", "bold"),
+        (f"{result.files_scanned} files  ", ""),
+        (f"{n} {issues}  ", "dim"),
+        (f"score {result.total_score}  ", ""),
+        (status.upper(), status_style),
     )
+
+
+def _sort_key_path(f: Finding) -> tuple[str, str, int, str]:
+    return (
+        _display_path(Path(f.file_path).parent),
+        Path(f.file_path).name,
+        _SEVERITY_ORDER.get(f.severity.lower(), 3),
+        f.rule_id,
+    )
+
+
+def _print_finding_line(console: Console, finding: Finding, verbose: bool) -> None:
+    sev = finding.severity.lower()
+    style = _SEVERITY_STYLE.get(sev, "white")
+    loc = _line_range(finding)
+    msg = escape(finding.message)
+    console.print(
+        Text.assemble(
+            "    ",
+            (loc, "dim"),
+            " ",
+            (f"[{finding.severity.upper()}]", style),
+            " ",
+            (finding.rule_id, "white"),
+            "  ",
+            (msg, "default"),
+        )
+    )
+    if verbose:
+        console.print(Text(f"      (+{finding.score})", style="dim italic"))
+
+
+def _print_grouped_findings(console: Console, findings: list[Finding], verbose: bool) -> None:
+    by_dir: dict[str, list[Finding]] = defaultdict(list)
+    for f in findings:
+        by_dir[str(Path(f.file_path).resolve().parent)].append(f)
+
+    for dir_path in sorted(by_dir.keys(), key=lambda p: _display_path(Path(p))):
+        console.print(Text(f"{_display_path(Path(dir_path))}/", style="bold dim"))
+        by_file: dict[str, list[Finding]] = defaultdict(list)
+        for f in by_dir[dir_path]:
+            by_file[f.file_path].append(f)
+        for file_path in sorted(by_file.keys(), key=lambda p: Path(p).name):
+            console.print(Text(f"  {Path(file_path).name}", style="cyan"))
+            for finding in sorted(
+                by_file[file_path],
+                key=lambda f: (
+                    _SEVERITY_ORDER.get(f.severity.lower(), 3),
+                    f.line_start or 0,
+                    f.rule_id,
+                ),
+            ):
+                _print_finding_line(console, finding, verbose)
 
 
 def report(result: ScanResult, verbose: bool = False) -> None:
     console = Console()
     status = grade(result.total_score)
-
-    console.print()
-    console.print(_summary_panel(result, status))
-    console.print()
-
+    console.print(_summary_line(result, status))
     if not result.findings:
-        console.print(
-            Panel(
-                Text("No issues found.", style="bold green"),
-                border_style="green",
-            )
-        )
-        console.print()
+        console.print(Text("No issues.", style="green"))
         return
-
-    sorted_findings = sorted(
-        result.findings,
-        key=lambda f: (_SEVERITY_ORDER.get(f.severity, 3), f.file_path),
-    )
-
-    console.print(Rule("[dim]Findings[/dim]", style="bright_magenta"))
-    console.print()
-
-    for finding in sorted_findings:
-        sev = finding.severity.lower()
-        style = _SEVERITY_STYLE.get(sev, "white")
-        label = f"[{finding.severity.upper()}] "
-        console.print(Text.assemble((label, style), (finding.rule_id, "cyan")))
-        console.print(Text(f"  {_format_location(finding)}", style="dim"))
-        console.print(Text(f"  {escape(finding.message)}"))
-        if verbose:
-            console.print(Text(f"  score: +{finding.score}", style="dim italic"))
-        console.print()
+    ordered = sorted(result.findings, key=_sort_key_path)
+    _print_grouped_findings(console, ordered, verbose)

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .config import Config
+from .git_scope import scan_paths_from_git_diff
 from .models import FileContext, Finding, ScanResult
 from .parsers.python_ast import parse_python
 from .parsers.text_parser import parse_text
@@ -109,8 +110,11 @@ def _run_cross_file_rules(
     return findings
 
 
-def scan(root: Path, config: Config) -> ScanResult:
-    files = walk_repo(root, config)
+def scan(root: Path, config: Config, *, changed_since: str | None = None) -> ScanResult:
+    if changed_since is not None:
+        files = scan_paths_from_git_diff(root, config, changed_since)
+    else:
+        files = walk_repo(root, config)
     rule_set = _build_rule_set(config)
     enabled_rule_ids = _resolve_enabled_rule_ids(config, rule_set.all_rule_ids)
     contexts = _build_contexts(files)

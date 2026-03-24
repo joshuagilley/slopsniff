@@ -38,6 +38,7 @@ npm i -D slopsniff-cli
 {
   "scripts": {
     "slopsniff": "slopsniff .",
+    "slopsniff:branch": "slopsniff . --branch",
     "slopsniff:strict": "slopsniff . --fail-threshold 0 --format json"
   }
 }
@@ -55,6 +56,8 @@ uv add --dev slopsniff
 ```bash
 # run in your project
 slopsniff .
+# only files changed vs main (git diff)
+slopsniff . --branch
 # optional strict mode
 slopsniff . --fail-threshold 0 --format json
 ```
@@ -239,7 +242,7 @@ env PYTHONPATH=src uv run python -m slopsniff.cli . --fail-threshold 30
 Notes:
 
 - Pre-commit runs `ruff`, `ruff-format`, `slopsniff`, and `pytest`.
-- Terminal output uses [Rich](https://github.com/textualize/rich). Use `--format json` for machine output.
+- Default terminal output is compact and [Rich](https://github.com/textualize/rich)-colored: one summary line (files, issue count, score, status), then findings **grouped by directory and file** (paths relative to the current working directory when possible). Use `--format json` for machine output.
 - For local runs, prefer `env PYTHONPATH=src uv run python -m slopsniff.cli ...`.
 
 ---
@@ -258,7 +261,15 @@ env PYTHONPATH=src uv run python -m slopsniff.cli . --format json
 
 # Override thresholds ad hoc
 env PYTHONPATH=src uv run python -m slopsniff.cli . --max-file-lines 300 --max-function-lines 40
+
+# Only files changed vs main (git diff main --name-only --diff-filter=ACMR, then normal include/exclude rules)
+env PYTHONPATH=src uv run python -m slopsniff.cli . --branch
+env PYTHONPATH=src uv run python -m slopsniff.cli . --changed-since origin/main
 ```
+
+`--branch` is a shortcut for `--changed-since main`. The scan root must sit inside a git work tree. Untracked files are not included until they are committed or staged in a way that shows up in that diff (same as plain `git diff <ref>`).
+
+**Terminal vs JSON:** default output is human-oriented and grouped as above; pass `--format json` for CI or tooling. Use `--verbose` to print each finding’s score contribution.
 
 ---
 
@@ -378,12 +389,12 @@ Optional guard:
 
 Pipeline:
 
-1. Walk repo and collect included files.
+1. Walk repo (or, with `--changed-since` / `--branch`, only paths from `git diff`) and collect included files.
 2. Parse functions (`ast` for Python, heuristic parser for JS/TS/TSX/JSX/Vue).
 3. Run per-file rules.
 4. Run cross-file rules.
 5. Aggregate findings and score.
-6. Report (`terminal` via Rich or `json`) and exit non-zero on threshold fail.
+6. Report (compact Rich terminal or `json`) and exit non-zero on threshold fail.
 
 Key paths:
 
