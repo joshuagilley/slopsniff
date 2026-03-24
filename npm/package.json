@@ -1,0 +1,32 @@
+{
+  "name": "@joshuadgilley/slopsniff",
+  "version": "0.0.0-dev",
+  "description": "npm wrapper for the SlopSniff Python CLI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshuagilley/slopsniff.git"
+  },
+  "homepage": "https://github.com/joshuagilley/slopsniff",
+  "bugs": {
+    "url": "https://github.com/joshuagilley/slopsniff/issues"
+  },
+  "type": "commonjs",
+  "bin": {
+    "slopsniff": "bin/slopsniff.js"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "keywords": [
+    "cli",
+    "code-quality",
+    "static-analysis",
+    "ai",
+    "linter"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

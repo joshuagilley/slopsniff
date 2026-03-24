@@ -14,6 +14,21 @@ A lightweight CLI for catching code-quality drift ("slop") before it hardens int
 
 ---
 
+## npm Usage
+
+Install/run from JavaScript projects via npm:
+
+```bash
+npx @joshuadgilley/slopsniff .
+```
+
+Notes:
+- The npm package is a wrapper around the Python CLI.
+- It runs `slopsniff` via `uv tool run --from slopsniff ...`.
+- On macOS/Linux, it will attempt to install `uv` automatically if missing.
+
+---
+
 ### What it catches
 
 <table>
