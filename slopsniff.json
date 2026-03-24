@@ -2,7 +2,20 @@
   "fail-threshold": 0,
   "max-file-lines-warning": 400,
   "max-function-lines-warning": 50,
-  "exclude-dirs": [".git", "node_modules", "tests"],
+  "exclude-dirs": [
+    ".git",
+    "node_modules",
+    ".nuxt",
+    "dist",
+    "build",
+    ".venv",
+    "coverage",
+    "tests",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache"
+  ],
   "include": [
     "fallback-defaults",
     "exposed-secrets",

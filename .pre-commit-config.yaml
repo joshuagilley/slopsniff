@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: slopsniff
         name: slopsniff
-        entry: env PYTHONPATH=src uv run python -m slopsniff.cli scan . --fail-threshold 0
+        entry: env PYTHONPATH=src uv run python -m slopsniff.cli . --fail-threshold 0
         language: system
         pass_filenames: false
         always_run: true
