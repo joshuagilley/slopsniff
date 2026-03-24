@@ -220,6 +220,7 @@ Example:
   "verbose": false,
   "include-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue", ".html"],
   "large-file-extensions": [".py", ".js", ".ts", ".tsx", ".jsx", ".vue"],
+  "exclude-files": ["temp_slop_examples.py", "src/fixtures/example.py"],
   "exclude-dirs": [
     ".git",
     "node_modules",
@@ -250,6 +251,7 @@ Rule IDs for `include`:
 Notes:
 - CLI flags still work and override file values (for example, `--fail-threshold`).
 - If `include` is omitted, all rules run.
+- `exclude-files` accepts either bare filenames or scan-root-relative paths.
 - Unknown keys and unknown rule IDs fail fast with clear errors.
 
 ---
