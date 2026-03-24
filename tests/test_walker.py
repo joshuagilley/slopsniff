@@ -28,6 +28,18 @@ def test_walk_excludes_node_modules(tmp_path: Path) -> None:
     assert any(f.name == "index.ts" for f in files)
 
 
+def test_walk_excludes_tests_dir_by_default(tmp_path: Path) -> None:
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_config.py").write_text('x = os.getenv("X", "1")')
+    (tmp_path / "src.py").write_text("x = 1")
+
+    config = Config()
+    files = walk_repo(tmp_path, config)
+
+    assert not any("tests" in f.parts for f in files)
+    assert any(f.name == "src.py" for f in files)
+
+
 def test_walk_filters_by_extension(tmp_path: Path) -> None:
     (tmp_path / "script.py").write_text("x = 1")
     (tmp_path / "readme.md").write_text("# readme")

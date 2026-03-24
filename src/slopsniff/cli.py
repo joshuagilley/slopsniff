@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 import typer
 
 from . import scanner as _scanner
-from .config import Config
+from .config import Config, load_include_rules
 from .reporters import json_reporter
 from .reporters import terminal as terminal_reporter
 
@@ -24,12 +24,14 @@ def _resolve_scan_root(path: str) -> Path:
 
 
 def _build_config(
+    scan_root: Path,
     fail_threshold: int,
     verbose: bool,
     max_file_lines: int | None,
     max_function_lines: int | None,
 ) -> Config:
     config = Config(fail_threshold=fail_threshold, verbose=verbose)
+    config.include_rules = load_include_rules(scan_root)
     if max_file_lines is not None:
         config.max_file_lines_warning = max_file_lines
     if max_function_lines is not None:
@@ -81,8 +83,12 @@ def scan(
       slopsniff . --format json
     """
     target = _resolve_scan_root(path)
-    config = _build_config(fail_threshold, verbose, max_file_lines, max_function_lines)
-    result = _scanner.scan(target, config)
+    try:
+        config = _build_config(target, fail_threshold, verbose, max_file_lines, max_function_lines)
+        result = _scanner.scan(target, config)
+    except ValueError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(1) from exc
     _render_result(result, format, verbose)
 
     if not result.passed:

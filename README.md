@@ -55,6 +55,37 @@ uv run slopsniff . --max-file-lines 300 --max-function-lines 40
 
 ---
 
+## Configuration (`slopsniff.json`)
+
+SlopSniff auto-loads `slopsniff.json` from the scan root (the path you pass to `slopsniff`).
+Use `include` to restrict checks to only the rule IDs your team cares about.
+
+Example:
+
+```json
+{
+  "include": [
+    "fallback-defaults",
+    "exposed-secrets",
+    "large-function"
+  ]
+}
+```
+
+Available rule IDs:
+- `fallback-defaults`
+- `exposed-secrets`
+- `large-function`
+- `large-file`
+- `duplicate-functions`
+- `helper-sprawl`
+
+Notes:
+- If `include` is omitted, all rules run.
+- Unknown rule IDs fail fast with a clear error so CI config mistakes are visible.
+
+---
+
 ## Contributing and Commits
 
 Standard flow:
