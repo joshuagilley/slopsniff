@@ -19,7 +19,7 @@ A lightweight CLI for catching code-quality drift ("slop") before it hardens int
 <table>
 <tr>
 <th>JavaScript / TypeScript (app repo)</th>
-<th>Python (this repo / local dev)</th>
+<th>Python (app repo)</th>
 </tr>
 <tr>
 <td>
@@ -45,16 +45,16 @@ npm i -D slopsniff-cli
 <td>
 
 ```bash
-git clone https://github.com/joshuagilley/slopsniff
-cd slopsniff
-uv sync --dev
-pre-commit install
+# install in your Python project
+uv add --dev slopsniff
+# or: pip install slopsniff
 ```
 
 ```bash
-uv run pytest
-uv run ruff check .
-env PYTHONPATH=src uv run python -m slopsniff.cli . --fail-threshold 30
+# run in your project
+slopsniff .
+# optional strict mode
+slopsniff . --fail-threshold 0 --format json
 ```
 
 </td>
