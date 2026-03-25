@@ -43,6 +43,7 @@ def _summary_line(result: ScanResult, status: str) -> Text:
     issues = "issue" if n == 1 else "issues"
     status_style = _STATUS_STYLE.get(status, "white")
     return Text.assemble(
+        ("🐽 ", ""),
         ("slopsniff ", "bold"),
         (f"{result.files_scanned} files  ", ""),
         (f"{n} {issues}  ", "dim"),

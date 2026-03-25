@@ -1,4 +1,4 @@
-# slopsniff-cli
+# 🐽 slopsniff-cli
 
 Node wrapper for the Python `slopsniff` CLI.
 

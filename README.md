@@ -1,7 +1,7 @@
-# SlopSniff
+# 🐽 SlopSniff
 
 <p align="center">
-  <img src="assets/logo.png" alt="SlopSniff" width="320" />
+  <img src="assets/logo.png" alt="SlopSniff 🐽" width="320" />
 </p>
 
 <p align="center">
@@ -10,7 +10,7 @@
   <a href="https://github.com/joshuagilley/slopsniff/actions/workflows/ci.yml"><img src="https://github.com/joshuagilley/slopsniff/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
 </p>
 
-A lightweight CLI for catching code-quality drift ("slop") before it hardens into team-wide tech debt.
+A lightweight CLI 🐽 for catching code-quality drift ("slop") before it hardens into team-wide tech debt.
 
 ---
 

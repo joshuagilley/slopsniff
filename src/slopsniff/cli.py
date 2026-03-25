@@ -10,7 +10,7 @@ from .reporters import terminal as terminal_reporter
 
 app = typer.Typer(
     name="slopsniff",
-    help="Catch AI slop and code quality drift before it hardens into tech debt.",
+    help="🐽 Catch AI slop and code quality drift before it hardens into tech debt.",
     no_args_is_help=True,
 )
 
